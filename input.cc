@@ -93,7 +93,7 @@ Usage of the tool
 */
 void usage ( void )
  {
-   fprintf ( stdout, " Usage: maw <options>\n" );
+   fprintf ( stdout, " Usage: fstc <options>\n" );
    fprintf ( stdout, " Standard (Mandatory):\n" );
    fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' for nucleotide  sequences or `PROT'\n"
                      "                                      for protein  sequences. \n" );
