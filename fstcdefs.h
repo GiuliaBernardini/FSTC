@@ -22,6 +22,7 @@
 #define DEL_STR                 "$"
 
 #define DNA                     "ACGTN"                         //DNA alphabet
+#define DNASIZE			5
 #define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
 #define max(a,b) ((a) > (b)) ? (a) : (b)
@@ -43,27 +44,25 @@ struct TSwitch
    char               * alphabet;
    char               * input_filename;
    char               * output_filename;
-   unsigned int         total_length;
  };
 
-struct Tree
- {
-   
- };
 
 struct Node
  {
   Node				*parent;
-  Node[(int)strlen(*alphabet)]	*children; //TODO: do it more wisely
+  Node				**children; //TODO: do it more wisely (hashmaps)
   unsigned int  		start;
   unsigned int 			depth;	
  };
 
-Node create_node(Node u, unsigned int d); //aggiungere parametro output o no? ripassare C
+struct Node* create_node(Node u, unsigned int d); //aggiungere parametro output o no? ripassare C
 
-Node create_leaf(unsigned int i, Node u, unsigned int d); //idem
+struct Node* create_leaf(unsigned int i, Node u, unsigned int d); //idem
+
+struct Node* child(Node u, char c);
 
 double gettime( void );
+INT mapping_dna ( unsigned char c );
 int decode_switches ( int argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
 unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );

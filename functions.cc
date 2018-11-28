@@ -64,20 +64,47 @@ unsigned int LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * L
 	return ( 1 );
 }
 
-Node create_node(Node u, unsigned int d)
+
+struct Node* child(Node *u, unsigned char c)
+{
+	if(u -> children[mapping_dna(c)] != NULL)
+	{
+		return u -> children[mapping_dna(c)];
+	}
+	else
+		return NULL;
+}
+
+struct Node * create_node( Node * u, unsigned int d, unsigned char * seq, struct TSwitch sw )
 {
 	int i;
-	Node p;
-	Node v;
+	int sigma = strlen(sw . alphabet);
+	Node * p;
+	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 
-	i=u.start;
-	p=u.parent;
-	v.start = i;
-	v.depth = d;
-	v.parent = p;
-	v.children
+	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
+
+	i = u -> start;
+	p = u -> parent;
+	v -> start = i;
+	v -> depth = d;
+	v -> parent = p;
+	v -> children[mapping_dna(seq[i+d])] = u;
 	return v;
 }
+
+
+struct Node * create_leaf( Node * u, unsigned int i, unsigned char * seq, struct TSwitch sw )
+{
+	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
+
+	v -> start = i;
+	v -> depth = i - sizeof(seq) + 1;
+	v -> parent = u;
+	return v;
+}
+
+
 
 unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
 {
@@ -145,4 +172,99 @@ unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id
 	free ( LCP );
 
 	return ( 1 );
+}
+
+INT mapping_dna ( unsigned char c )
+{
+	INT a = 5;
+	switch (c)
+	{
+		case 'A':
+			a = 0;
+			break;
+		case 'C':
+			a=1;
+			break;
+		case 'G':
+			a=2;	
+			break;
+		case 'T':
+			a=3;
+			break;
+		case 'N':
+			a=4;
+			break;
+		
+	}
+	return(a);
+}
+
+
+unsigned char Mapping( int a )
+{
+	char c = DEL;
+        switch ( a )
+	{
+            case 0:
+                c = 'A';
+                break;
+            case 1:
+                c = 'C';
+                break;
+            case 2:
+                c = 'G';
+                break;
+            case 3:
+                c = 'T';
+                break;
+            case 4:
+                c = 'N';
+                break;
+            case 5:
+                c = 'R';
+                break;
+            case 6:
+                c = 'D';
+                break;
+            case 7:
+                c = 'Q';
+                break;
+            case 8:
+                c = 'E';
+                break;
+            case 9:
+                c = 'H';
+                break;
+            case 10:
+                c = 'I';
+                break;
+            case 11:
+                c = 'L';
+                break;
+            case 12:
+                c = 'K';
+                break;
+            case 13:
+                c = 'M';
+                break;
+            case 14:
+                c = 'F';
+                break;
+            case 15:
+                c = 'P';
+                break;
+            case 16:
+                c = 'S';
+                break;
+            case 17:
+                c = 'W';
+                break;
+            case 18:
+                c = 'Y';
+                break;
+            case 19:
+                c = 'V';
+                break;
+        }
+	return ( c );
 }
