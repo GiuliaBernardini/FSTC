@@ -97,7 +97,7 @@ void usage ( void )
    fprintf ( stdout, " Standard (Mandatory):\n" );
    fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' for nucleotide  sequences or `PROT'\n"
                      "                                      for protein  sequences. \n" );
-   fprintf ( stdout, "  -i, --input-file          <str>     (Multi)FASTA input filename.\n" );
+   fprintf ( stdout, "  -i, --input-file          <str>     FASTA input filename.\n" );
    fprintf ( stdout, "  -o, --output-file         <str>     Output filename.\n" );
  }
 
