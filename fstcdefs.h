@@ -57,9 +57,11 @@ struct Node
 
 struct Node* create_node(Node u, unsigned int d); //aggiungere parametro output o no? ripassare C
 
-struct Node* create_leaf(unsigned int i, Node u, unsigned int d); //idem
+struct Node * create_leaf( Node * u, unsigned int i, unsigned int n);
 
 struct Node* child(Node u, char c);
+
+struct Node * create_root();
 
 double gettime( void );
 INT mapping_dna ( unsigned char c );

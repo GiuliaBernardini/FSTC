@@ -94,16 +94,26 @@ struct Node * create_node( Node * u, unsigned int d, unsigned char * seq, struct
 }
 
 
-struct Node * create_leaf( Node * u, unsigned int i, unsigned char * seq, struct TSwitch sw )
+struct Node * create_leaf( Node * u, unsigned int i, unsigned int n)
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 
 	v -> start = i;
-	v -> depth = i - sizeof(seq) + 1;
+	v -> depth = i - n + 1;
 	v -> parent = u;
 	return v;
 }
 
+struct Node * create_root( struct TSwitch sw )
+{
+	int sigma = strlen(sw . alphabet);
+	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
+	v -> start = 0;
+	v -> depth = 0;
+	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
+	v -> parent = NULL;
+	return v;
+}
 
 
 unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
@@ -163,6 +173,27 @@ unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id
                 fprintf(stderr, " Error: LCP computation failed.\n" );
                 exit( EXIT_FAILURE );
         }
+
+	//struct Node * root = ( struct Node * ) malloc (sizeof(struct Node)); 
+	Node * root = create_root( sw );
+	Node * last_leaf;
+	Node * ancestor;
+	last_leaf = root;
+
+	for(int i = 1; i < n; i++)
+	{
+		ancestor = last_leaf;
+
+		while(ancestor -> depth > LCP[i])
+		{
+			ancestor = ancestor -> parent;
+		}
+		
+		if(ancestor -> depth == LCP[i])
+		{	
+			last_leaf = create_leaf( ancestor, SA[i]+LCP[i], n);
+		}
+	}
 
 	free ( invSA );
 
