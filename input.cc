@@ -37,13 +37,13 @@ static struct option long_options[] =
 /* 
 Decode the input switches 
 */
-int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
+INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw )
  {
    int          oi;
    int          opt;
    double       val;
    char       * ep;
-   int          args;
+   INT          args;
 
    /* initialisation */
    sw -> alphabet                       = NULL;

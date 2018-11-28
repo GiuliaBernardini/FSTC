@@ -40,7 +40,7 @@ double gettime( void )
     return ttime.tv_sec + ttime.tv_usec * 0.000001;
 };
 
-unsigned int LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
+INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 {										
 	INT i=0, j=0;
 
@@ -69,7 +69,7 @@ struct Node* child(Node *u, unsigned char c)
 		return NULL;
 }
 
-struct Node * create_node( Node * u, unsigned int d, unsigned char * seq, struct TSwitch sw )
+struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch sw )
 {
 	int i;
 	int sigma = strlen(sw . alphabet);
@@ -88,7 +88,7 @@ struct Node * create_node( Node * u, unsigned int d, unsigned char * seq, struct
 }
 
 
-struct Node * create_leaf( Node * u, unsigned int i, unsigned int n)
+struct Node * create_leaf( Node * u, INT i, INT n)
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 
@@ -110,7 +110,7 @@ struct Node * create_root( struct TSwitch sw )
 }
 
 
-unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
+INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
 {
 	INT * SA;
 	INT * LCP;
@@ -163,7 +163,7 @@ unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id
 	Node * ancestor;
 	last_leaf = root;
 
-	for(int i = 1; i < n; i++)
+	for(INT i = 1; i < n; i++)
 	{
 		ancestor = last_leaf;
 
@@ -214,7 +214,7 @@ INT mapping_dna ( unsigned char c )
 }
 
 
-unsigned char Mapping( int a )
+unsigned char Mapping( INT a )
 {
 	char c = DEL;
         switch ( a )

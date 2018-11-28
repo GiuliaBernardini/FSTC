@@ -45,21 +45,17 @@ struct Node
  {
   Node				*parent;
   Node				**children; //TODO: do it more wisely (hashmaps)
-  unsigned int  		start;
-  unsigned int 			depth;	
+  INT  		start;
+  INT 			depth;	
  };
 
-struct Node* create_node(Node u, unsigned int d); //aggiungere parametro output o no? ripassare C
-
-struct Node * create_leaf( Node * u, unsigned int i, unsigned int n);
-
-struct Node* child(Node u, char c);
-
-struct Node * create_root();
-
+struct Node * create_node( Node * u, INT d ); //aggiungere parametro output o no? ripassare C
+struct Node * create_leaf( Node * u, INT i, INT n);
+struct Node * child( Node u, char c );
+struct Node * create_root( struct TSwitch sw );
 double gettime( void );
 INT mapping_dna ( unsigned char c );
-int decode_switches ( int argc, char * argv [], struct TSwitch * sw );
+INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
-unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
-unsigned int LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
+INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
+INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );

@@ -35,7 +35,7 @@ int main(int argc, char **argv)
         unsigned char * seq    = NULL;         	// the sequence in memory
         unsigned char * seq_id = NULL;         	// the sequence id in memory
         char *          alphabet;               // the alphabet
-	unsigned int    i, j;	
+	INT    i, j;	
 
 	/* Decodes the arguments */
         i = decode_switches ( argc, argv, &sw );
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		unsigned int max_alloc_seq_id = 0;
-		unsigned int seq_id_len = 0;
+		INT max_alloc_seq_id = 0;
+		INT seq_id_len = 0;
 		while ( ( c = fgetc( in_fd ) ) != EOF && c != '\n' )
 		{
 			if ( seq_id_len >= max_alloc_seq_id )
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 			
 	}
 
-	unsigned int max_alloc_seq = 0;
+	INT max_alloc_seq = 0;
 	INT seq_len = 0;
 
 	while ( ( c = fgetc( in_fd ) ) != EOF && c != '>' )
