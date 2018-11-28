@@ -71,15 +71,13 @@ struct Node* child(Node *u, unsigned char c)
 
 struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch sw )
 {
-	int i;
-	int sigma = strlen(sw . alphabet);
-	Node * p;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 
+	INT sigma = strlen(sw . alphabet);
 	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
 
-	i = u -> start;
-	p = u -> parent;
+	INT i = u -> start;
+	Node * p = u -> parent;
 	v -> start = i;
 	v -> depth = d;
 	v -> parent = p;
@@ -91,7 +89,6 @@ struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch 
 struct Node * create_leaf( Node * u, INT i, INT n)
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-
 	v -> start = i;
 	v -> depth = i - n + 1;
 	v -> parent = u;
@@ -100,7 +97,7 @@ struct Node * create_leaf( Node * u, INT i, INT n)
 
 struct Node * create_root( struct TSwitch sw )
 {
-	int sigma = strlen(sw . alphabet);
+	INT sigma = strlen(sw . alphabet);
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
@@ -179,9 +176,6 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 	}
 
 	free ( invSA );
-
-	/* Put the LCP to ST algorithm */
-
         free ( SA );
 	free ( LCP );
 
