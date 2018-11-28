@@ -139,13 +139,8 @@ int main(int argc, char **argv)
 			max_alloc_seq += ALLOC_SIZE;
 		}
 		seq[ seq_len ] = '\0';
-		#ifdef _USE_32
-		fprintf( stderr, "Constructing suffix tree of sequence %s of length %d\n", ( char * ) seq_id, seq_len );
-		#endif
 
-		#ifdef _USE_64
 		fprintf( stderr, "Constructing suffix tree of sequence %s of length %ld\n", ( char * ) seq_id, seq_len );
-		#endif
 			
 		construct_suffix_tree ( seq, seq_id, sw );
 	}

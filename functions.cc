@@ -26,13 +26,7 @@
 
 #include "fstcdefs.h"
 
-#ifdef _USE_64
 #include <divsufsort64.h>                                         // include header for suffix sort
-#endif
-
-#ifdef _USE_32
-#include <divsufsort.h>                                           // include header for suffix sort
-#endif
 
 #include <sdsl/bit_vectors.hpp>					  // include header for bit vectors
 
@@ -131,21 +125,11 @@ unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id
                 return ( 0 );
         }
 
-	#ifdef _USE_64
         if( divsufsort64( seq, SA,  n ) != 0 )
         {
                 fprintf(stderr, " Error: SA computation failed.\n" );
                 exit( EXIT_FAILURE );
         }
-	#endif
-
-	#ifdef _USE_32
-        if( divsufsort( seq, SA,  n ) != 0 )
-        {
-                fprintf(stderr, " Error: SA computation failed.\n" );
-                exit( EXIT_FAILURE );
-        }
-	#endif
 
         /*Compute the inverse SA array */
         invSA = ( INT * ) calloc( n , sizeof( INT ) );
@@ -174,7 +158,6 @@ unsigned int construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id
                 exit( EXIT_FAILURE );
         }
 
-	//struct Node * root = ( struct Node * ) malloc (sizeof(struct Node)); 
 	Node * root = create_root( sw );
 	Node * last_leaf;
 	Node * ancestor;
