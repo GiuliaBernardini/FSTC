@@ -154,6 +154,7 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
                 fprintf(stderr, " Error: LCP computation failed.\n" );
                 exit( EXIT_FAILURE );
         }
+	free ( invSA );
 
 	Node * root = create_root( sw );
 	Node * last_leaf;
@@ -185,8 +186,7 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 		}
 	}
   
-	free ( invSA );
-        free ( SA );
+	free ( SA );
 	free ( LCP );
 
 	return ( 1 );
