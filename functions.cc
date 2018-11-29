@@ -160,7 +160,6 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 	Node * ancestor;
 	Node * rightmost_child;
 	last_leaf = create_leaf( root, SA[0] , n);
-	
 
 	for(INT i = 1; i < n; i++)
 	{
@@ -173,14 +172,13 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 			ancestor = rightmost_child -> parent;
 		}
 		
-		if( ancestor -> depth == LCP[i])
+		if( ancestor -> depth == LCP[i] )
 		{	
 			last_leaf = create_leaf( ancestor, SA[i]+LCP[i], n);
 		}
-		
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], seq, sw  ); //check if the second argument is correct
+			Node * new_node = create_node( rightmost_child, LCP[i], seq, sw  );
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1] + LCP[i];
 			last_leaf = create_leaf( new_node, SA[i]+LCP[i], n);	
