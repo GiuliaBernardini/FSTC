@@ -90,7 +90,7 @@ struct Node * create_leaf( Node * u, INT i, INT n)
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = i;
-	v -> depth = i - n + 1;
+	v -> depth = n - i + 1;
 	v -> parent = u;
 	return v;
 }
@@ -158,23 +158,35 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 	Node * root = create_root( sw );
 	Node * last_leaf;
 	Node * ancestor;
-	last_leaf = root;
+	Node * rightmost_child;
+	last_leaf = create_leaf( root, SA[0] , n);
+	
 
 	for(INT i = 1; i < n; i++)
 	{
-		ancestor = last_leaf;
+		rightmost_child = last_leaf;
+		ancestor = rightmost_child -> parent;
 
-		while(ancestor -> depth > LCP[i])
+		while( ancestor -> depth > LCP[i] )
 		{
-			ancestor = ancestor -> parent;
+			rightmost_child = ancestor;
+			ancestor = rightmost_child -> parent;
 		}
 		
-		if(ancestor -> depth == LCP[i])
+		if( ancestor -> depth == LCP[i])
 		{	
 			last_leaf = create_leaf( ancestor, SA[i]+LCP[i], n);
 		}
+		
+		else
+		{
+			Node * new_node = create_node( rightmost_child, LCP[i], seq, sw  ); //check if the second argument is correct
+			rightmost_child -> parent = new_node;
+			rightmost_child -> start = SA[i-1] + LCP[i];
+			last_leaf = create_leaf( new_node, SA[i]+LCP[i], n);	
+		}
 	}
-
+  
 	free ( invSA );
         free ( SA );
 	free ( LCP );
