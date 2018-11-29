@@ -117,38 +117,35 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
         /* Compute the suffix array */
         SA = ( INT * ) malloc( ( n ) * sizeof( INT ) );
         if( ( SA == NULL) )
-        {
+	{
                 fprintf(stderr, " Error: Cannot allocate memory for SA.\n" );
-                return ( 0 );
-        }
+                exit( EXIT_FAILURE );
+	}
 
         if( divsufsort64( seq, SA,  n ) != 0 )
-        {
+	{
                 fprintf(stderr, " Error: SA computation failed.\n" );
                 exit( EXIT_FAILURE );
-        }
+	}
 
-        /*Compute the inverse SA array */
+        /* Compute the inverse SA array */
         invSA = ( INT * ) calloc( n , sizeof( INT ) );
         if( ( invSA == NULL) )
-        {
+	{
                 fprintf(stderr, " Error: Cannot allocate memory for invSA.\n" );
-                return ( 0 );
-        }
+                exit( EXIT_FAILURE );
+	}
 
-        for ( INT i = 0; i < n; i ++ )
-        {
-                invSA [SA[i]] = i;
-        }
+        for ( INT i = 0; i < n; i ++ )	invSA [SA[i]] = i;
 
 	LCP = ( INT * ) calloc  ( n, sizeof( INT ) );
-        if( ( LCP == NULL) )
-        {
+	if( ( LCP == NULL) )
+	{
                 fprintf(stderr, " Error: Cannot allocate memory for LCP.\n" );
-                return ( 0 );
-        }
+                exit( EXIT_FAILURE );
+	}
 
-        /* Compute the LCP array */
+	/* Compute the LCP array */
         if( LCParray( seq, n, SA, invSA, LCP ) != 1 )
         {
                 fprintf(stderr, " Error: LCP computation failed.\n" );
@@ -156,11 +153,13 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
         }
 	free ( invSA );
 
+	
+	/* construct the suffix tree */
 	Node * root = create_root( sw );
 	Node * last_leaf;
 	Node * ancestor;
 	Node * rightmost_child;
-	last_leaf = create_leaf( root, SA[0] , n);
+	last_leaf = create_leaf( root, SA[0], n);
 
 	for(INT i = 1; i < n; i++)
 	{
@@ -186,6 +185,8 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 		}
 	}
   
+	/* add the suffix links */
+
 	free ( SA );
 	free ( LCP );
 
