@@ -51,8 +51,8 @@ struct Node
   bool		visited;
  };
 
-struct Node * create_node( Node * u, INT d ); //aggiungere parametro output o no? ripassare C
-struct Node * create_leaf( Node * u, INT i, INT n);
+struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct TSwitch sw );
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, char * seq);
 struct Node * child( Node u, char c );
 struct Node * create_root( struct TSwitch sw );
 double gettime( void );

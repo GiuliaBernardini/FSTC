@@ -69,31 +69,34 @@ struct Node* child(Node *u, unsigned char c)
 		return NULL;
 }
 
-struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch sw )
+struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct TSwitch sw )
 {
-	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
-
 	INT i = u -> start;
 	Node * p = u -> parent;
-	v -> start = i;
-	v -> depth = d;
+	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
+	v -> children = ( struct Node ** ) calloc (sw . sigma + 1, sizeof(struct Node *));
+	for(INT i=0; i< sw . sigma + 1; i++)	v -> children[i] = NULL;
+	v -> start = i; v -> depth = d;
+	if ( i + d == n )		v -> children[0] = u;
+	else				v -> children[mapping_dna(seq[i+d])] = u;
+	u -> parent = v;
+	if ( i + p -> depth == n )	p -> children[0] = v;
+	else				p -> children[mapping_dna(seq[i+p->depth])] = v;
 	v -> parent = p;
-	v -> children[mapping_dna(seq[i+d])] = u;
 	v -> visited = false;
 	return v;
 }
 
 
-struct Node * create_leaf( Node * u, INT i, INT n)
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq)
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = NULL;
 	v -> start = i;
 	v -> depth = n - i + 1;
-	v -> parent = u;
 	v -> visited = false;
+	u -> children[mapping_dna(seq[i+d])] = v;
+	v -> parent = u;
 	return v;
 }
 
@@ -102,8 +105,8 @@ struct Node * create_root( struct TSwitch sw )
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
+	v -> children = ( struct Node ** ) calloc (sw . sigma + 1, sizeof(struct Node *));
+	for(INT i=0; i< sw . sigma + 1; i++)	v -> children[i] = NULL;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
@@ -161,7 +164,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	Node * last_leaf;
 	Node * ancestor;
 	Node * rightmost_child;
-	last_leaf = create_leaf( root, SA[0], n);
+	last_leaf = create_leaf( root, SA[0], 0, n, seq);
 
 	for(INT i = 1; i < n; i++)
 	{
@@ -176,14 +179,14 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 		
 		if( ancestor -> depth == LCP[i] )
 		{	
-			last_leaf = create_leaf( ancestor, SA[i]+LCP[i], n);
+			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, seq);
 		}
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], seq, sw  );
+			Node * new_node = create_node( rightmost_child, LCP[i], n, seq, sw  );
 			rightmost_child -> parent = new_node;
-			rightmost_child -> start = SA[i-1] + LCP[i];
-			last_leaf = create_leaf( new_node, SA[i]+LCP[i], n);	
+			rightmost_child -> start = SA[i-1];
+			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, seq);	
 		}
 
 //Fare DFS per liberare memoria: Free function (DFS), print_nodes function, forward_search function
@@ -200,17 +203,18 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	current_node -> visited = true;
-	fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
-	for(INT i = 0; i< sw . sigma; i++)
-	{
-		if( (current_node -> children != NULL) && (current_node -> children[i] != NULL) )
+	if( current_node -> children != NULL )
+	{	
+		for(INT i = 0; i < sw . sigma + 1; i++)
 		{
-			fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
-			if (current_node -> children[i] -> visited != true)
-			DFS(tree, current_node -> children[i], sw);		
+			if (current_node -> children[i] != NULL)
+			{
+				if (current_node -> children[i] -> visited != true)
+					DFS(tree, current_node -> children[i], sw);		
+			}
 		}
 	}
-	//fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
+	fprintf ( stderr, "(Start:%ld,Depth:%ld)\n", current_node -> start, current_node -> depth );
 	return(1);
 }
 
@@ -220,19 +224,19 @@ INT mapping_dna ( unsigned char c )
 	switch (c)
 	{
 		case 'A':
-			a = 0;
-			break;
-		case 'C':
 			a=1;
 			break;
+		case 'C':
+			a=2;
+			break;
 		case 'G':
-			a=2;	
+			a=3;	
 			break;
 		case 'T':
-			a=3;
+			a=4;
 			break;
 		case 'N':
-			a=4;
+			a=5;
 			break;
 		
 	}
