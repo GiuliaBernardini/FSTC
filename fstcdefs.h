@@ -20,9 +20,7 @@
 #define ALLOC_SIZE              1048576
 #define DEL                     '$'
 #define DEL_STR                 "$"
-
 #define DNA                     "ACGTN"                         //DNA alphabet
-#define DNASIZE			5
 #define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
 #define max(a,b) ((a) > (b)) ? (a) : (b)
