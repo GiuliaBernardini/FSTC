@@ -204,17 +204,25 @@ INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	current_node -> visited = true;
 	if( current_node -> children != NULL )
-	{	
 		for(INT i = 0; i < sw . sigma + 1; i++)
-		{
 			if (current_node -> children[i] != NULL)
-			{
 				if (current_node -> children[i] -> visited != true)
 					DFS(tree, current_node -> children[i], sw);		
-			}
-		}
-	}
 	fprintf ( stderr, "(Start:%ld,Depth:%ld)\n", current_node -> start, current_node -> depth );
+	return(1);
+}
+
+INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
+{
+	current_node -> visited = true;
+	if( current_node -> children != NULL )
+		for(INT i = 0; i < sw . sigma + 1; i++)
+			if (current_node -> children[i] != NULL)
+				if (current_node -> children[i] -> visited != true)
+					STfree(tree, current_node -> children[i], sw);		
+	free ( current_node -> children );
+	current_node -> children = NULL;
+	free ( current_node );
 	return(1);
 }
 

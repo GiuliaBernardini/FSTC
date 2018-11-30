@@ -61,4 +61,5 @@ INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
 struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw );
+INT STfree( Node * tree, Node * current_node, struct TSwitch sw );
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
