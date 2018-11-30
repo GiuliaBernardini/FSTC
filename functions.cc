@@ -72,9 +72,8 @@ struct Node* child(Node *u, unsigned char c)
 struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch sw )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-
-	INT sigma = sw . sigma;
-	v -> children = ( struct Node ** ) calloc (sigma, sizeof(struct Node *));
+	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
+	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 
 	INT i = u -> start;
 	Node * p = u -> parent;
@@ -90,6 +89,7 @@ struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch 
 struct Node * create_leaf( Node * u, INT i, INT n)
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
+	v -> children = NULL;
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> parent = u;
@@ -99,11 +99,11 @@ struct Node * create_leaf( Node * u, INT i, INT n)
 
 struct Node * create_root( struct TSwitch sw )
 {
-	INT sigma = sw . sigma;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	v -> children = ( struct Node ** ) calloc (sigma, sizeof(struct Node *));
+	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
+	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
@@ -199,18 +199,18 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
-	INT sigma = sw . sigma;
-	INT i;
 	current_node -> visited = true;
-
-	for(i=0; i<sigma; i++)
+	fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
+	for(INT i = 0; i< sw . sigma; i++)
 	{
-		if((current_node -> children[i] != NULL) && (current_node -> children[i] -> visited == false))
+		if( (current_node -> children != NULL) && (current_node -> children[i] != NULL) )
 		{
+			fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
+			if (current_node -> children[i] -> visited != true)
 			DFS(tree, current_node -> children[i], sw);		
 		}
 	}
-	fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
+	//fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
 	return(1);
 }
 
