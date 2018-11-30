@@ -26,10 +26,6 @@
 
 #include "fstcdefs.h"
 #include <divsufsort64.h>                                         // include header for suffix sort
-#include <sdsl/bit_vectors.hpp>					  // include header for bit vectors
-
-using namespace sdsl;
-using namespace std;
 
 double gettime( void )
 {

@@ -16,20 +16,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
 
-#include <sdsl/bit_vectors.hpp>					  // include header for bit vectors
 #define ALLOC_SIZE              1048576
-#define DEL                     '$'
-#define DEL_STR                 "$"
 #define DNA                     "ACGTN"                         //DNA alphabet
 #define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
 #define max(a,b) ((a) > (b)) ? (a) : (b)
 #define min(a,b) ((a) < (b)) ? (a) : (b)
 
-using namespace sdsl;
-using namespace std;
-
-typedef int64_t INT;
+typedef signed long int INT;
 
 struct TSwitch
  {
@@ -49,15 +43,17 @@ struct Node
   bool		visited;
  };
 
+double gettime( void );
+INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
+void usage ( void );
+
 struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct TSwitch sw );
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq, struct TSwitch sw);
 struct Node * child( Node u, char c, struct TSwitch sw );
 struct Node * create_root( struct TSwitch sw );
-double gettime( void );
-INT mapping ( unsigned char c, struct TSwitch sw );
-INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
-void usage ( void );
 struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
+
+INT mapping ( unsigned char c, struct TSwitch sw );
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT STfree( Node * tree, Node * current_node, struct TSwitch sw );
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
