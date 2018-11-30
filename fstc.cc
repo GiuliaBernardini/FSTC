@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
                 input_filename          = sw . input_filename;
                 output_filename         = sw . output_filename;
-		sw . sigma = strlen ( alphabet );
+		sw . sigma 		= strlen ( alphabet ) + 1;
         }
 
 
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 				return ( 1 );
 			}
 		}
-		}
+	}
 	if( seq_len != 0 )
 	{
 		if ( seq_len >= max_alloc_seq )
@@ -145,6 +145,7 @@ int main(int argc, char **argv)
 		
 		Node * tree;	
 		tree = construct_suffix_tree ( seq, seq_id, sw );
+		DFS( tree, tree, sw );
 		STfree( tree, tree, sw );
 	}
 		

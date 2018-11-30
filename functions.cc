@@ -25,9 +25,7 @@
 #include <sys/time.h>
 
 #include "fstcdefs.h"
-
 #include <divsufsort64.h>                                         // include header for suffix sort
-
 #include <sdsl/bit_vectors.hpp>					  // include header for bit vectors
 
 using namespace sdsl;
@@ -43,7 +41,6 @@ double gettime( void )
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 {										
 	INT i=0, j=0;
-
 	LCP[0] = 0;
 	for ( i = 0; i < n; i++ ) // compute LCP[ISA[i]]
 		if ( ISA[i] != 0 ) 
@@ -54,19 +51,13 @@ INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 				j++;
 			LCP[ISA[i]] = j;
 		}
-
 	return ( 1 );
 }
 
-
-struct Node* child(Node *u, unsigned char c)
+struct Node* child(Node *u, unsigned char c, struct TSwitch sw)
 {
-	if(u -> children[mapping_dna(c)] != NULL)
-	{
-		return u -> children[mapping_dna(c)];
-	}
-	else
-		return NULL;
+	if(u -> children[mapping(c, sw)] != NULL)	return u -> children[mapping(c, sw)];
+	else						return NULL;
 }
 
 struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct TSwitch sw )
@@ -74,28 +65,28 @@ struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct T
 	INT i = u -> start;
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-	v -> children = ( struct Node ** ) calloc (sw . sigma + 1, sizeof(struct Node *));
-	for(INT i=0; i< sw . sigma + 1; i++)	v -> children[i] = NULL;
+	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
+	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> start = i; v -> depth = d;
 	if ( i + d == n )		v -> children[0] = u;
-	else				v -> children[mapping_dna(seq[i+d])] = u;
+	else				v -> children[mapping(seq[i+d], sw)] = u;
 	u -> parent = v;
 	if ( i + p -> depth == n )	p -> children[0] = v;
-	else				p -> children[mapping_dna(seq[i+p->depth])] = v;
+	else				p -> children[mapping(seq[i+p->depth], sw)] = v;
 	v -> parent = p;
 	v -> visited = false;
 	return v;
 }
 
 
-struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq)
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq, struct TSwitch sw )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = NULL;
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
-	u -> children[mapping_dna(seq[i+d])] = v;
+	u -> children[mapping(seq[i+d], sw)] = v;
 	v -> parent = u;
 	return v;
 }
@@ -105,8 +96,8 @@ struct Node * create_root( struct TSwitch sw )
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	v -> children = ( struct Node ** ) calloc (sw . sigma + 1, sizeof(struct Node *));
-	for(INT i=0; i< sw . sigma + 1; i++)	v -> children[i] = NULL;
+	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
+	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
@@ -164,7 +155,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	Node * last_leaf;
 	Node * ancestor;
 	Node * rightmost_child;
-	last_leaf = create_leaf( root, SA[0], 0, n, seq);
+	last_leaf = create_leaf( root, SA[0], 0, n, seq, sw );
 
 	for(INT i = 1; i < n; i++)
 	{
@@ -179,17 +170,15 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 		
 		if( ancestor -> depth == LCP[i] )
 		{	
-			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, seq);
+			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, seq, sw);
 		}
 		else
 		{
 			Node * new_node = create_node( rightmost_child, LCP[i], n, seq, sw  );
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
-			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, seq);	
+			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, seq, sw);	
 		}
-
-//Fare DFS per liberare memoria: Free function (DFS), print_nodes function, forward_search function
 	}
   
 	/* add the suffix links */
@@ -204,11 +193,11 @@ INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	current_node -> visited = true;
 	if( current_node -> children != NULL )
-		for(INT i = 0; i < sw . sigma + 1; i++)
+		for(INT i = 0; i < sw . sigma; i++)
 			if (current_node -> children[i] != NULL)
 				if (current_node -> children[i] -> visited != true)
 					DFS(tree, current_node -> children[i], sw);		
-	fprintf ( stderr, "(Start:%ld,Depth:%ld)\n", current_node -> start, current_node -> depth );
+	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
 	return(1);
 }
 
@@ -216,7 +205,7 @@ INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	current_node -> visited = true;
 	if( current_node -> children != NULL )
-		for(INT i = 0; i < sw . sigma + 1; i++)
+		for(INT i = 0; i < sw . sigma; i++)
 			if (current_node -> children[i] != NULL)
 				if (current_node -> children[i] -> visited != true)
 					STfree(tree, current_node -> children[i], sw);		
@@ -226,97 +215,29 @@ INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 	return(1);
 }
 
-INT mapping_dna ( unsigned char c )
+INT mapping ( unsigned char c, struct TSwitch sw )
 {
-	INT a = 5;
-	switch (c)
+	INT a;
+	if ( ! strcmp ( "DNA", sw . alphabet ) )
 	{
-		case 'A':
-			a=1;
-			break;
-		case 'C':
-			a=2;
-			break;
-		case 'G':
-			a=3;	
-			break;
-		case 'T':
-			a=4;
-			break;
-		case 'N':
-			a=5;
-			break;
-		
+		switch ( c )
+		{
+			case 'A':
+				a=1;
+				break;
+			case 'C':
+				a=2;
+				break;
+			case 'G':
+				a=3;	
+				break;
+			case 'T':
+				a=4;
+				break;
+			case 'N':
+				a=5;
+				break;
+		}
 	}
-	return(a);
-}
-
-
-unsigned char Mapping( INT a )
-{
-	char c = DEL;
-        switch ( a )
-	{
-            case 0:
-                c = 'A';
-                break;
-            case 1:
-                c = 'C';
-                break;
-            case 2:
-                c = 'G';
-                break;
-            case 3:
-                c = 'T';
-                break;
-            case 4:
-                c = 'N';
-                break;
-            case 5:
-                c = 'R';
-                break;
-            case 6:
-                c = 'D';
-                break;
-            case 7:
-                c = 'Q';
-                break;
-            case 8:
-                c = 'E';
-                break;
-            case 9:
-                c = 'H';
-                break;
-            case 10:
-                c = 'I';
-                break;
-            case 11:
-                c = 'L';
-                break;
-            case 12:
-                c = 'K';
-                break;
-            case 13:
-                c = 'M';
-                break;
-            case 14:
-                c = 'F';
-                break;
-            case 15:
-                c = 'P';
-                break;
-            case 16:
-                c = 'S';
-                break;
-            case 17:
-                c = 'W';
-                break;
-            case 18:
-                c = 'Y';
-                break;
-            case 19:
-                c = 'V';
-                break;
-        }
-	return ( c );
+	return( a );
 }

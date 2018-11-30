@@ -52,11 +52,11 @@ struct Node
  };
 
 struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct TSwitch sw );
-struct Node * create_leaf( Node * u, INT i, INT d, INT n, char * seq);
-struct Node * child( Node u, char c );
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq, struct TSwitch sw);
+struct Node * child( Node u, char c, struct TSwitch sw );
 struct Node * create_root( struct TSwitch sw );
 double gettime( void );
-INT mapping_dna ( unsigned char c );
+INT mapping ( unsigned char c, struct TSwitch sw );
 INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
 struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
