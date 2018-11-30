@@ -58,6 +58,7 @@ int main(int argc, char **argv)
 
                 input_filename          = sw . input_filename;
                 output_filename         = sw . output_filename;
+		sw . sigma = strlen ( alphabet );
         }
 
 
@@ -141,8 +142,10 @@ int main(int argc, char **argv)
 		seq[ seq_len ] = '\0';
 
 		fprintf( stderr, "Constructing suffix tree of sequence %s of length %ld\n", ( char * ) seq_id, seq_len );
-			
-		construct_suffix_tree ( seq, seq_id, sw );
+		
+		Node * tree;	
+		tree = construct_suffix_tree ( seq, seq_id, sw );
+		DFS ( tree, tree, sw );
 	}
 		
 	if ( fclose ( in_fd ) )

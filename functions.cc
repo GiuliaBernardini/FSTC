@@ -73,7 +73,7 @@ struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch 
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 
-	INT sigma = strlen(sw . alphabet);
+	INT sigma = sw . sigma;
 	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
 
 	INT i = u -> start;
@@ -82,6 +82,7 @@ struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch 
 	v -> depth = d;
 	v -> parent = p;
 	v -> children[mapping_dna(seq[i+d])] = u;
+	v -> visited = false;
 	return v;
 }
 
@@ -92,22 +93,24 @@ struct Node * create_leaf( Node * u, INT i, INT n)
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> parent = u;
+	v -> visited = false;
 	return v;
 }
 
 struct Node * create_root( struct TSwitch sw )
 {
-	INT sigma = strlen(sw . alphabet);
+	INT sigma = sw . sigma;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
 	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
 	v -> parent = NULL;
+	v -> visited = false;
 	return v;
 }
 
 
-INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
+struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
 {
 	INT * SA;
 	INT * LCP;
@@ -185,13 +188,32 @@ INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct 
 			rightmost_child -> start = SA[i-1] + LCP[i];
 			last_leaf = create_leaf( new_node, SA[i]+LCP[i], n);	
 		}
+
+//Fare DFS per liberare memoria: Free function (DFS), print_nodes function, forward_search function
 	}
   
 	free ( invSA );
         free ( SA );
 	free ( LCP );
 
-	return ( 1 );
+	return ( root );
+}
+
+INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
+{
+	INT sigma = sw . sigma;
+	INT i;
+	current_node -> visited = true;
+
+	for(i=0; i<sigma; i++)
+	{
+		if((current_node -> children[i] != NULL) && (current_node -> children[i] -> visited == false))
+		{
+			DFS(tree, current_node -> children[i], sw);		
+		}
+	}
+	fprintf(stderr, "Start = %ld, depth = %ld", current_node -> start, current_node -> depth);
+	return(1);
 }
 
 INT mapping_dna ( unsigned char c )

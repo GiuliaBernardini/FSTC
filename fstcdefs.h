@@ -36,6 +36,7 @@ typedef int64_t INT;
 struct TSwitch
  {
    char               * alphabet;
+   INT			sigma;
    char               * input_filename;
    char               * output_filename;
  };
@@ -43,10 +44,11 @@ struct TSwitch
 
 struct Node
  {
-  Node				*parent;
-  Node				**children; //TODO: do it more wisely (hashmaps)
+  Node		*parent;
+  Node		**children; //TODO: do it more wisely (hashmaps)
   INT  		start;
-  INT 			depth;	
+  INT 		depth;	
+  bool		visited;
  };
 
 struct Node * create_node( Node * u, INT d ); //aggiungere parametro output o no? ripassare C
@@ -57,5 +59,6 @@ double gettime( void );
 INT mapping_dna ( unsigned char c );
 INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
-INT construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
+struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
+INT DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
