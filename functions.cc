@@ -74,7 +74,7 @@ struct Node * create_node( Node * u, INT d, unsigned char * seq, struct TSwitch 
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 
 	INT sigma = sw . sigma;
-	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
+	v -> children = ( struct Node ** ) calloc (sigma, sizeof(struct Node *));
 
 	INT i = u -> start;
 	Node * p = u -> parent;
@@ -103,7 +103,7 @@ struct Node * create_root( struct TSwitch sw )
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	v -> children = ( struct Node ** ) malloc (sizeof(struct Node *) * sigma);
+	v -> children = ( struct Node ** ) calloc (sigma, sizeof(struct Node *));
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
@@ -155,7 +155,6 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
                 exit( EXIT_FAILURE );
         }
 	free ( invSA );
-
 	
 	/* construct the suffix tree */
 	Node * root = create_root( sw );
@@ -211,7 +210,7 @@ INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 			DFS(tree, current_node -> children[i], sw);		
 		}
 	}
-	fprintf(stderr, "Start = %ld, depth = %ld", current_node -> start, current_node -> depth);
+	fprintf ( stderr, "(%ld,%ld)\n", current_node -> start, current_node -> depth );
 	return(1);
 }
 
