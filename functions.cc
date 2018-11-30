@@ -120,50 +120,49 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
         /* Compute the suffix array */
         SA = ( INT * ) malloc( ( n ) * sizeof( INT ) );
         if( ( SA == NULL) )
-        {
+	{
                 fprintf(stderr, " Error: Cannot allocate memory for SA.\n" );
-                return ( 0 );
-        }
+                exit( EXIT_FAILURE );
+	}
 
         if( divsufsort64( seq, SA,  n ) != 0 )
-        {
+	{
                 fprintf(stderr, " Error: SA computation failed.\n" );
                 exit( EXIT_FAILURE );
-        }
+	}
 
-        /*Compute the inverse SA array */
+        /* Compute the inverse SA array */
         invSA = ( INT * ) calloc( n , sizeof( INT ) );
         if( ( invSA == NULL) )
-        {
+	{
                 fprintf(stderr, " Error: Cannot allocate memory for invSA.\n" );
-                return ( 0 );
-        }
+                exit( EXIT_FAILURE );
+	}
 
-        for ( INT i = 0; i < n; i ++ )
-        {
-                invSA [SA[i]] = i;
-        }
+        for ( INT i = 0; i < n; i ++ )	invSA [SA[i]] = i;
 
 	LCP = ( INT * ) calloc  ( n, sizeof( INT ) );
-        if( ( LCP == NULL) )
-        {
+	if( ( LCP == NULL) )
+	{
                 fprintf(stderr, " Error: Cannot allocate memory for LCP.\n" );
-                return ( 0 );
-        }
+                exit( EXIT_FAILURE );
+	}
 
-        /* Compute the LCP array */
+	/* Compute the LCP array */
         if( LCParray( seq, n, SA, invSA, LCP ) != 1 )
         {
                 fprintf(stderr, " Error: LCP computation failed.\n" );
                 exit( EXIT_FAILURE );
         }
+	free ( invSA );
 
+	
+	/* construct the suffix tree */
 	Node * root = create_root( sw );
 	Node * last_leaf;
 	Node * ancestor;
 	Node * rightmost_child;
-	last_leaf = create_leaf( root, SA[0] , n);
-	
+	last_leaf = create_leaf( root, SA[0], n);
 
 	for(INT i = 1; i < n; i++)
 	{
@@ -176,14 +175,13 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 			ancestor = rightmost_child -> parent;
 		}
 		
-		if( ancestor -> depth == LCP[i])
+		if( ancestor -> depth == LCP[i] )
 		{	
 			last_leaf = create_leaf( ancestor, SA[i]+LCP[i], n);
 		}
-		
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], seq, sw  ); //check if the second argument is correct
+			Node * new_node = create_node( rightmost_child, LCP[i], seq, sw  );
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1] + LCP[i];
 			last_leaf = create_leaf( new_node, SA[i]+LCP[i], n);	
@@ -192,8 +190,9 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 //Fare DFS per liberare memoria: Free function (DFS), print_nodes function, forward_search function
 	}
   
-	free ( invSA );
-        free ( SA );
+	/* add the suffix links */
+
+	free ( SA );
 	free ( LCP );
 
 	return ( root );
