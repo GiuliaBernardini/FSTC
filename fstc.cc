@@ -22,6 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <map>
+#include <algorithm>
+
 #include "fstcdefs.h"
 
 int main(int argc, char **argv)
@@ -58,7 +65,6 @@ int main(int argc, char **argv)
 
                 input_filename          = sw . input_filename;
                 output_filename         = sw . output_filename;
-		sw . sigma 		= strlen ( alphabet ) + 1;
         }
 
 
@@ -132,6 +138,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+
 	if( seq_len != 0 )
 	{
 		if ( seq_len >= max_alloc_seq )
@@ -143,6 +150,33 @@ int main(int argc, char **argv)
 
 		fprintf( stderr, "Constructing suffix tree of sequence %s of length %ld\n", ( char * ) seq_id, seq_len );
 		
+		/* construct the alphabet  map */
+		unordered_map<unsigned char, INT> u;
+		INT value = 1;
+		for ( INT i = 0; i < seq_len; i++ )
+			if ( u[seq[i]] == 0 )	u[seq[i]] = value++;
+	    
+		sw . sigma = 0;
+		for( const auto& a : u )	sw . sigma++;
+		
+		sw . alphabet_string = ( unsigned char * ) calloc ( sw . sigma + 1, sizeof(unsigned char));
+		
+		i = 0;
+		for( const auto& a : u ) {
+			sw . alphabet_string[i++]=a.first;
+		}
+		sw . alphabet_string[sw.sigma]=0;
+
+		sort(&sw.alphabet_string[0], &sw.alphabet_string[sw.sigma]);
+		
+		for ( INT i = 0; i < sw . sigma; i++ )	sw . mapping[sw.alphabet_string[i]] = i+1;
+		
+		fprintf( stderr, "Alphabet size: %ld\n", sw . sigma);
+		fprintf( stderr, "Letters and ranks: ");
+		for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
+		fprintf( stderr, "\n");
+		sw . sigma = sw . sigma + 1;	//increase by one for $
+
 		Node * tree;	
 		tree = construct_suffix_tree ( seq, seq_id, sw );
 		STfree( tree, tree, sw );
@@ -165,6 +199,7 @@ int main(int argc, char **argv)
         free ( sw . input_filename );
         free ( sw . output_filename );
         free ( sw . alphabet );
+        free ( sw . alphabet_string );
 
 	return ( 0 );
 }

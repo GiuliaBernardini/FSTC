@@ -47,6 +47,7 @@ INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw )
 
    /* initialisation */
    sw -> alphabet                       = NULL;
+   sw -> alphabet_string                = NULL;
    sw -> input_filename                 = NULL;
    sw -> output_filename                = NULL;
    args = 0;

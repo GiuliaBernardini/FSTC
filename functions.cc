@@ -24,8 +24,17 @@
 #include <assert.h>
 #include <sys/time.h>
 
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <map>
+#include <algorithm>
+
+
 #include "fstcdefs.h"
 #include <divsufsort64.h>                                         // include header for suffix sort
+
+using namespace std;
 
 double gettime( void )
 {
@@ -52,7 +61,7 @@ INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 
 struct Node* child(Node *u, unsigned char c, struct TSwitch sw)
 {
-	if(u -> children[mapping(c, sw)] != NULL)	return u -> children[mapping(c, sw)];
+	if(u -> children[sw . mapping[c]] != NULL)	return u -> children[sw . mapping[c]];
 	else						return NULL;
 }
 
@@ -65,10 +74,10 @@ struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct T
 	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> start = i; v -> depth = d;
 	if ( i + d == n )		v -> children[0] = u;
-	else				v -> children[mapping(seq[i+d], sw)] = u;
+	else				v -> children[sw . mapping[seq[i+d]]] = u;
 	u -> parent = v;
 	if ( i + p -> depth == n )	p -> children[0] = v;
-	else				p -> children[mapping(seq[i+p->depth], sw)] = v;
+	else				p -> children[sw . mapping[seq[i+p->depth]]] = v;
 	v -> parent = p;
 	v -> visited = false;
 	return v;
@@ -82,7 +91,7 @@ struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq, s
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
-	u -> children[mapping(seq[i+d], sw)] = v;
+	u -> children[sw . mapping[seq[i+d]]] = v;
 	v -> parent = u;
 	return v;
 }
@@ -209,31 +218,4 @@ INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 	current_node -> children = NULL;
 	free ( current_node );
 	return(1);
-}
-
-INT mapping ( unsigned char c, struct TSwitch sw )
-{
-	INT a;
-	if ( ! strcmp ( "DNA", sw . alphabet ) )
-	{
-		switch ( c )
-		{
-			case 'A':
-				a=1;
-				break;
-			case 'C':
-				a=2;
-				break;
-			case 'G':
-				a=3;	
-				break;
-			case 'T':
-				a=4;
-				break;
-			case 'N':
-				a=5;
-				break;
-		}
-	}
-	return( a );
 }
