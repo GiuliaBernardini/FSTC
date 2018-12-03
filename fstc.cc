@@ -179,6 +179,7 @@ int main(int argc, char **argv)
 
 		Node * tree;	
 		tree = construct_suffix_tree ( seq, seq_id, sw );
+		DFS( tree, tree, sw );
 		STfree( tree, tree, sw );
 	}
 		

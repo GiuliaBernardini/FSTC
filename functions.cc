@@ -71,7 +71,7 @@ struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct T
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
+	//for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> start = i; v -> depth = d;
 	if ( i + d == n )		v -> children[0] = u;
 	else				v -> children[sw . mapping[seq[i+d]]] = u;
@@ -102,7 +102,7 @@ struct Node * create_root( struct TSwitch sw )
 	v -> start = 0;
 	v -> depth = 0;
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
+	//for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
@@ -203,7 +203,8 @@ INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 				if (current_node -> children[i] -> visited != true)
 					DFS(tree, current_node -> children[i], sw);		
 	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
-	return(1);
+	current_node -> visited = false;
+	return( 1 );
 }
 
 INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
@@ -214,8 +215,15 @@ INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 			if (current_node -> children[i] != NULL)
 				if (current_node -> children[i] -> visited != true)
 					STfree(tree, current_node -> children[i], sw);		
-	free ( current_node -> children );
-	current_node -> children = NULL;
-	free ( current_node );
-	return(1);
+	if ( current_node -> children != NULL )
+	{
+		free ( current_node -> children );
+		current_node -> children = NULL;
+	}
+	if ( current_node )
+	{
+		free ( current_node );
+		current_node = NULL;
+	}
+	return( 1 );
 }
