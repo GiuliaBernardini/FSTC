@@ -285,3 +285,37 @@ INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 	}
 	return( 1 );
 }
+
+INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
+{
+	stack<Node *> S;
+	S.push(current_node);
+	while(!S.empty())
+	{
+		current_node = S.top();
+		if(!current_node -> visited)
+		{
+			current_node -> visited = true;
+			if( current_node -> children != NULL )
+				for(INT i = sw.sigma -1; i >=0; i--)
+					if (current_node -> children[i] != NULL)	
+						S.push(current_node -> children[i]);
+		}
+		else
+		{	
+			S.pop();
+			current_node -> visited = false;	
+			if ( current_node -> children != NULL )
+			{
+				free ( current_node -> children );
+				current_node -> children = NULL;
+			}
+			if ( current_node )
+			{
+				free ( current_node );
+				current_node = NULL;
+			}
+		}
+	}
+	return( 1 );
+}

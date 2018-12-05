@@ -64,6 +64,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT STfree( Node * tree, Node * current_node, struct TSwitch sw );
+INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw );
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
 
 list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw );

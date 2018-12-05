@@ -181,8 +181,8 @@ int main(int argc, char **argv)
 
 		Node * tree;	
 		tree = construct_suffix_tree ( seq, seq_id, sw );
-		euler_tour( tree, tree, sw );
-		STfree( tree, tree, sw );
+		iterative_DFS( tree, tree, sw );
+		iterative_STfree( tree, tree, sw );
 	}
 		
 	if ( fclose ( in_fd ) )
