@@ -27,6 +27,7 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <stack>
 #include <algorithm>
 
 #include "fstcdefs.h"
@@ -179,7 +180,7 @@ int main(int argc, char **argv)
 
 		Node * tree;	
 		tree = construct_suffix_tree ( seq, seq_id, sw );
-		DFS( tree, tree, sw );
+		iterative_DFS( tree, tree, sw );
 		STfree( tree, tree, sw );
 	}
 		

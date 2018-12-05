@@ -29,6 +29,7 @@
 #include <unordered_map>
 #include <map>
 #include <algorithm>
+#include <stack>
 
 
 #include "fstcdefs.h"
@@ -206,6 +207,53 @@ INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	current_node -> visited = false;
 	return( 1 );
 }
+
+INT iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
+{
+	stack<Node *> S;
+	S.push(current_node);
+	while(!S.empty())
+	{
+		current_node = S.top();
+		if(!current_node -> visited)
+		{
+			current_node -> visited = true;
+			if( current_node -> children != NULL )
+				for(INT i = sw.sigma -1; i >=0; i--)
+					if (current_node -> children[i] != NULL)	
+						S.push(current_node -> children[i]);
+			//fprintf ( stderr, "stack size: %ld\n", S.size() );
+		}
+		else
+		{	
+			S.pop();
+			fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
+			//current_node -> visited = false;	
+		}
+	}
+	return( 1 );
+}
+
+
+//Node** Euler = ( struct Node ** ) calloc (2 * strlen ( ( char * ) sw.seq -1), sizeof(struct Node *));
+//Node** Euler = ( struct Node ** ) calloc (11 , sizeof(struct Node *)); //TODO: do it more wisely later
+void eulerTree(Node* u, INT &indx, struct TSwitch sw, Node** Euler ) 
+{ 
+    u -> visited = true; 
+    Euler[indx++] = u; 
+    for(INT i = 0; i < sw . sigma; i++)
+    {
+	if (u -> children[i] != NULL)
+	{
+		if (u -> children[i] -> visited != true)
+		{
+			eulerTree(u -> children[i], indx, sw, Euler);	
+           		Euler[indx++] = u; 
+		}
+	}
+  
+    } 
+} 
 
 INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 {

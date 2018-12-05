@@ -21,10 +21,11 @@
 #define DNA                     "ACGTN"                         //DNA alphabet
 #define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
-#define max(a,b) ((a) > (b)) ? (a) : (b)
-#define min(a,b) ((a) < (b)) ? (a) : (b)
+//#define max(a,b) ((a) > (b)) ? (a) : (b)
+//#define min(a,b) ((a) < (b)) ? (a) : (b)
 
 #include <map>
+#include <stack>
 using namespace std;
 
 typedef signed long int INT;
@@ -60,5 +61,8 @@ struct Node * create_root( struct TSwitch sw );
 struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
 
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw );
+INT iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT STfree( Node * tree, Node * current_node, struct TSwitch sw );
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
+
+void eulerTree(Node* u, INT &indx);
