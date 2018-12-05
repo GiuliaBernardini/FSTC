@@ -32,9 +32,8 @@
 #include <stack>
 #include <list>
 
-
 #include "fstcdefs.h"
-#include <divsufsort64.h>                                         // include header for suffix sort
+#include <divsufsort64.h>                                         
 
 using namespace std;
 
@@ -43,13 +42,13 @@ double gettime( void )
     struct timeval ttime;
     gettimeofday( &ttime , 0 );
     return ttime.tv_sec + ttime.tv_usec * 0.000001;
-};
+}
 
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 {										
 	INT i=0, j=0;
 	LCP[0] = 0;
-	for ( i = 0; i < n; i++ ) // compute LCP[ISA[i]]
+	for ( i = 0; i < n; i++ ) 
 		if ( ISA[i] != 0 ) 
 		{
 			if ( i == 0) j = 0;
@@ -73,7 +72,6 @@ struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct T
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	//for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> start = i; v -> depth = d;
 	if ( i + d == n )		v -> children[0] = u;
 	else				v -> children[sw . mapping[seq[i+d]]] = u;
@@ -104,7 +102,6 @@ struct Node * create_root( struct TSwitch sw )
 	v -> start = 0;
 	v -> depth = 0;
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	//for(INT i=0; i< sw . sigma; i++)	v -> children[i] = NULL;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
