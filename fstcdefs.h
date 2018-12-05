@@ -26,6 +26,7 @@
 
 #include <map>
 #include <stack>
+#include <list>
 using namespace std;
 
 typedef signed long int INT;
@@ -65,4 +66,4 @@ INT iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT STfree( Node * tree, Node * current_node, struct TSwitch sw );
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
 
-void eulerTree(Node* u, INT &indx);
+list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw );
