@@ -301,16 +301,10 @@ INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 		{	
 			S.pop();
 			current_node -> visited = false;	
-			if ( current_node -> children != NULL )
-			{
-				free ( current_node -> children );
-				current_node -> children = NULL;
-			}
-			if ( current_node )
-			{
-				free ( current_node );
-				current_node = NULL;
-			}
+			free ( current_node -> children );
+			current_node -> children = NULL;
+			free ( current_node );
+			current_node = NULL;
 		}
 	}
 	return( 1 );
