@@ -220,34 +220,53 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	return( traversal );
 }
 
+//I think it is better to output euler_tour and level
 list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	stack<Node *> S;
+	stack<bool> last_child;
+	INT d= 1;
 	S.push(current_node);
+	last_child.push(true);
 	list<Node *> tour;
+	list<INT> level;
 	while(!S.empty())
 	{
 		current_node = S.top();
 		if(!current_node -> visited)
 		{
 			tour.push_back(current_node);
+			level.push_back(d);
+			fprintf ( stderr, "level of (START:%ld,DEPTH:%ld): %ld\n", current_node -> start, current_node -> depth, d );
 			current_node -> visited = true;
 			if( current_node -> children != NULL )
+			{
+				d++;
+				last_child.push(true);
 				for(INT i = sw.sigma -1; i >=0; i--)
-					if (current_node -> children[i] != NULL)	
+					if (current_node -> children[i] != NULL)
+					{
 						S.push(current_node -> children[i]);
+						last_child.push(false);
+					}
+				last_child.pop();
+			}
 		}
 		else
 		{	
 			S.pop();
 			tour.push_back(current_node -> parent);
+			level.push_back(d-1);
+			fprintf ( stderr, "level of (START:%ld,DEPTH:%ld): %ld\n", current_node -> start, current_node -> depth, d - 1);
+			if(last_child.pop())
+				d--;
 			current_node -> visited = false;	
 		}
 	}
 	tour.pop_back();
-	for(auto v: tour)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", v -> start, v -> depth );
-	return( tour );
+	//for(auto v: tour)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", v -> start, v -> depth );
+	//return( tour );
 }
 
 INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
