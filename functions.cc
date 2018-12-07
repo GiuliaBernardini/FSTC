@@ -192,23 +192,11 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	return ( root );
 }
 
-INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
-{
-	current_node -> visited = true;
-	if( current_node -> children != NULL )
-		for(INT i = 0; i < sw . sigma; i++)
-			if (current_node -> children[i] != NULL)
-				if (current_node -> children[i] -> visited != true)
-					DFS(tree, current_node -> children[i], sw);		
-	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
-	current_node -> visited = false;
-	return( 1 );
-}
-
-INT iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
+list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	stack<Node *> S;
 	S.push(current_node);
+	list<Node *> traversal;
 	while(!S.empty())
 	{
 		current_node = S.top();
@@ -223,11 +211,13 @@ INT iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 		else
 		{	
 			S.pop();
-			fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
+			traversal.push_back(current_node);
 			current_node -> visited = false;	
 		}
 	}
-	return( 1 );
+	for(auto v: traversal)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", v -> start, v -> depth );
+	return( traversal );
 }
 
 list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw )
@@ -260,28 +250,6 @@ list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw )
 	return( tour );
 }
 
-
-INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
-{
-	current_node -> visited = true;
-	if( current_node -> children != NULL )
-		for(INT i = 0; i < sw . sigma; i++)
-			if (current_node -> children[i] != NULL)
-				if (current_node -> children[i] -> visited != true)
-					STfree(tree, current_node -> children[i], sw);		
-	if ( current_node -> children != NULL )
-	{
-		free ( current_node -> children );
-		current_node -> children = NULL;
-	}
-	if ( current_node )
-	{
-		free ( current_node );
-		current_node = NULL;
-	}
-	return( 1 );
-}
-
 INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	stack<Node *> S;
@@ -306,6 +274,43 @@ INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 			free ( current_node );
 			current_node = NULL;
 		}
+	}
+	return( 1 );
+}
+
+/* Test functions */
+
+INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
+{
+	current_node -> visited = true;
+	if( current_node -> children != NULL )
+		for(INT i = 0; i < sw . sigma; i++)
+			if (current_node -> children[i] != NULL)
+				if (current_node -> children[i] -> visited != true)
+					DFS(tree, current_node -> children[i], sw);		
+	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
+	current_node -> visited = false;
+	return( 1 );
+}
+
+
+INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
+{
+	current_node -> visited = true;
+	if( current_node -> children != NULL )
+		for(INT i = 0; i < sw . sigma; i++)
+			if (current_node -> children[i] != NULL)
+				if (current_node -> children[i] -> visited != true)
+					STfree(tree, current_node -> children[i], sw);		
+	if ( current_node -> children != NULL )
+	{
+		free ( current_node -> children );
+		current_node -> children = NULL;
+	}
+	if ( current_node )
+	{
+		free ( current_node );
+		current_node = NULL;
 	}
 	return( 1 );
 }
