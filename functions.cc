@@ -192,11 +192,39 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	}
   
 	/* add the suffix links */
+	construct_sl ( root, sw );
 
 	free ( SA );
 	free ( LCP );
 
 	return ( root );
+}
+
+struct Node * construct_sl( struct Node * tree, struct TSwitch sw )
+{
+	/* Create the queries */
+	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
+	INT euler_size = tree_DFS.size();
+	struct ELR ds;
+	ds . E = ( struct Node ** ) calloc (2*euler_size -1, sizeof(struct Node *));
+	ds . L = ( INT * ) calloc (2*euler_size -1, sizeof(INT));
+	ds . R = ( INT * ) calloc (euler_size, sizeof(INT));
+	euler_tour( tree, tree, sw, euler_size, &ds );
+	for(int i=0; i<2*euler_size -1; i++)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+	for(int i=0; i<euler_size; i++)
+		fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
+
+	/* Create the queries */
+
+	/* Answer the queries */
+
+	/* Add the links */
+
+	free ( ds . E );
+	free ( ds . L );
+	free ( ds . R );
+	return ( tree );
 }
 
 list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
@@ -227,26 +255,22 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	return( traversal );
 }
 
-struct ELR euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_size )
+INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_size, struct ELR * ds )
 {
 	stack<Node *> S;
 	stack<bool> last_child;
 	INT d = 1;
 	S.push(current_node);
 	last_child.push(true);
-	Node ** tour = ( struct Node ** ) calloc (2*euler_size -1, sizeof(struct Node *));
-	INT * level = ( INT * ) calloc (2*euler_size -1, sizeof(INT));
-	INT * R = ( INT * ) calloc (euler_size, sizeof(INT));
 	INT index = 0;
-	struct ELR new_ELR(2*euler_size-1, 2*euler_size-1, euler_size);
 	while(!S.empty())
 	{
 		current_node = S.top();
 		if(!current_node -> visited)
 		{
-			tour[index] = current_node;
-			level[index] = d;
-			R[current_node -> label] = index;
+			ds -> E[index] = current_node;
+			ds -> L[index] = d;
+			ds -> R[current_node -> label] = index;
 			index++;
 			current_node -> visited = true;
 			if( current_node -> children != NULL )
@@ -268,8 +292,8 @@ struct ELR euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT 
 
 			if(index < 2*euler_size -1)
 			{
-				tour[index] = current_node -> parent;
-				level[index] = d-1;
+				ds -> E[index] = current_node -> parent;
+				ds -> L[index] = d-1;
 				index++;
 			}
 
@@ -279,14 +303,7 @@ struct ELR euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT 
 			current_node -> visited = false;	
 		}
 	}
-	new_ELR.E = tour;
-	new_ELR.L = level;
-	new_ELR.R = R;
-	for(int i=0; i<2*euler_size -1; i++)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", tour[i] -> start, tour[i] -> depth, level[i], tour[i] -> label );
-	for(int i=0; i<euler_size; i++)
-		fprintf ( stderr, "R[%d] = %ld\n", i, R[i] );
-	return( new_ELR );
+	return( 1 );
 }
 
 INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )

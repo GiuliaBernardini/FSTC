@@ -55,18 +55,10 @@ struct Node
 
 struct ELR
 {
- Node		**E;
- INT		*L;
- INT		*R;
- INT		euler_size;
-
- ELR(INT sizeE,INT sizeL, INT sizeR)	
- {
-	E = ( struct Node ** ) calloc (sizeE, sizeof(struct Node *));
-	L = ( INT *) calloc (sizeL, sizeof(INT));
-	R = (INT*) calloc (sizeR, sizeof(INT));
-	euler_size = sizeR;
- }	
+ 	Node		**E;
+ 	INT		*L;
+ 	INT		*R;
+ 	INT		euler_size;
 };
 
 
@@ -80,8 +72,9 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw);
 struct Node * child( Node u, char c, struct TSwitch sw );
 struct Node * create_root( struct TSwitch sw );
+struct Node * construct_sl( struct Node * tree, struct TSwitch sw );
 struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
 
 list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
-struct ELR euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_size );
+INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_size, struct ELR * ds );
 INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw );
