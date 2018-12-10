@@ -244,7 +244,25 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 			}
 	}	
 	for(INT i=0; i < ds . size - n - 1; i++)
-		fprintf ( stderr, "internal node with label %ld: (%ld,%ld)\n", i+n+1, leaf_couples[i][0], leaf_couples[i][1]);
+		//fprintf ( stderr, "internal node with label %ld: (%ld,%ld)\n", i+n+1, leaf_couples[i][0], leaf_couples[i][1]);
+
+	/*add the links for terminal internal nodes*/
+	for(INT i=n+1; i < ds . size; i++)
+	{		
+		INT node_id = ds.R[i];
+		if(ds.E[node_id] -> children[0]!= NULL)
+		{
+			INT count_children = 0;
+			for(INT j=0; j<sw.sigma; j++)
+				count_children ++;
+			if(count_children ==2)
+			{
+				INT dollar_leaf_label = ds.E[node_id] -> children[0] -> label;
+				ds.E[node_id] -> slink = ds.E[ds.R[dollar_leaf_label + 1]] -> parent;
+				fprintf ( stderr, "slink of node labeled %ld: %ld\n", ds.E[node_id]->label, ds.E[node_id]->slink->label);
+			}
+		}
+	}
 
 	/* Answer the queries */
 
