@@ -204,16 +204,16 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw )
 {
 	/* Create the queries */
 	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
-	INT euler_size = tree_DFS.size();
 	struct ELR ds;
-	ds . E = ( struct Node ** ) calloc (2*euler_size -1, sizeof(struct Node *));
-	ds . L = ( INT * ) calloc (2*euler_size -1, sizeof(INT));
-	ds . R = ( INT * ) calloc (euler_size, sizeof(INT));
-	euler_tour( tree, tree, sw, euler_size, &ds );
-	for(int i=0; i<2*euler_size -1; i++)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
-	for(int i=0; i<euler_size; i++)
-		fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
+	ds . size = tree_DFS.size();
+	ds . E = ( struct Node ** ) calloc (2 * ds . size -1, sizeof(struct Node *));
+	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
+	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
+	euler_tour( tree, tree, sw, &ds );
+	//for(int i=0; i<2*euler_size -1; i++)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+	//for(int i=0; i<euler_size; i++)
+	//	fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
 	/* Create the queries */
 
@@ -250,12 +250,12 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 			current_node -> visited = false;	
 		}
 	}
-	for(auto v: traversal)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
+	//for(auto v: traversal)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
 	return( traversal );
 }
 
-INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_size, struct ELR * ds )
+INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR * ds )
 {
 	stack<Node *> S;
 	stack<bool> last_child;
@@ -290,7 +290,7 @@ INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_s
 		{	
 			S.pop();
 
-			if(index < 2*euler_size -1)
+			if(index < 2 * ds -> size -1)
 			{
 				ds -> E[index] = current_node -> parent;
 				ds -> L[index] = d-1;
