@@ -105,7 +105,6 @@ struct Node * create_root( struct TSwitch sw )
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
 	v -> parent = NULL;
 	v -> visited = false;
-	v -> label = 0;
 	return v;
 }
 
@@ -158,12 +157,12 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	
 	/* construct the suffix tree */
 	Node * root = create_root( sw );
+	root -> label = n;
 	Node * last_leaf;
 	Node * ancestor;
 	Node * rightmost_child;
-	INT label = 1;
-	last_leaf = create_leaf( root, SA[0], 0, n, label, seq, sw );
-	label++;
+	INT label = n+1;
+	last_leaf = create_leaf( root, SA[0], 0, n, SA[0], seq, sw );
 	for(INT i = 1; i < n; i++)
 	{
 		rightmost_child = last_leaf;
@@ -177,8 +176,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 		
 		if( ancestor -> depth == LCP[i] )
 		{	
-			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, label, seq, sw );
-			label++;
+			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq, sw );
 		}
 		else
 		{
@@ -186,13 +184,12 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 			label++;
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
-			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, label, seq, sw );	
-			label ++;
+			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq, sw );	
 		}
 	}
   
 	/* add the suffix links */
-	construct_sl ( root, sw );
+	construct_sl ( root, sw, n );
 
 	free ( SA );
 	free ( LCP );
@@ -200,7 +197,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	return ( root );
 }
 
-struct Node * construct_sl( struct Node * tree, struct TSwitch sw )
+struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 {
 	/* Create the queries */
 	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
@@ -216,11 +213,45 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw )
 		fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
 	/* Create the queries */
+	INT **leaf_couples = (INT**)malloc((euler_size - n - 1)*sizeof(INT*));
+	for(INT i=0; i<euler_size - n - 1; i++)
+	{
+		leaf_couples[i] = (INT*)malloc(2*sizeof(INT));
+		leaf_couples[i][0] = -1;
+		leaf_couples[i][1] = -1; 
+		//fprintf ( stderr, "came here: i= %ld\n", i );
+	}
+	stack<INT> internal_nodes;
+	INT node_id;
+	INT leaf_label;
+	for(INT i=0; i<2*euler_size -2; i++)
+	{
+		if(ds . E[i] -> label > n )
+			internal_nodes.push(ds . E[i] -> label);
+		else 
+			if(ds . E[i] -> label < n)
+			{	
+				leaf_label = ds . E[i] -> label;
+				while(!internal_nodes.empty())
+				{
+					node_id = internal_nodes.top() - n - 1; 
+					if(leaf_couples[node_id][0] < 0)
+						leaf_couples[node_id][0] = leaf_label;
+					else if(leaf_couples[node_id][1] <= 0)
+						leaf_couples[node_id][1] = leaf_label;
+					internal_nodes.pop();
+				}	
+			}
+	}	
+	for(INT i=0; i < euler_size - n - 1; i++)
+		fprintf ( stderr, "internal node with label %ld: (%ld,%ld)\n", i+n+1, leaf_couples[i][0], leaf_couples[i][1]);
 
 	/* Answer the queries */
 
 	/* Add the links */
-
+	for(INT i=0; i<euler_size - n - 1; i++)
+		free(leaf_couples[i]);
+	free(leaf_couples);
 	free ( ds . E );
 	free ( ds . L );
 	free ( ds . R );
