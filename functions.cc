@@ -235,8 +235,8 @@ struct ELR euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT 
 	S.push(current_node);
 	last_child.push(true);
 	Node ** tour = ( struct Node ** ) calloc (2*euler_size -1, sizeof(struct Node *));
-	INT level[2*euler_size-1];
-	INT R[euler_size];
+	INT * level = ( INT * ) calloc (2*euler_size -1, sizeof(INT));
+	INT * R = ( INT * ) calloc (euler_size, sizeof(INT));
 	INT index = 0;
 	struct ELR new_ELR(2*euler_size-1, 2*euler_size-1, euler_size);
 	while(!S.empty())
