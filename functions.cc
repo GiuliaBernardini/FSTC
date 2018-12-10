@@ -65,7 +65,7 @@ struct Node* child(Node *u, unsigned char c, struct TSwitch sw)
 	else						return NULL;
 }
 
-struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct TSwitch sw )
+struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
 {
 	INT i = u -> start;
 	Node * p = u -> parent;
@@ -79,11 +79,12 @@ struct Node * create_node( Node * u, INT d, INT n, unsigned char * seq, struct T
 	else				p -> children[sw . mapping[seq[i+p->depth]]] = v;
 	v -> parent = p;
 	v -> visited = false;
+	v -> label = label;
 	return v;
 }
 
 
-struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq, struct TSwitch sw )
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = NULL;
@@ -92,6 +93,7 @@ struct Node * create_leaf( Node * u, INT i, INT d, INT n, unsigned char * seq, s
 	v -> visited = false;
 	u -> children[sw . mapping[seq[i+d]]] = v;
 	v -> parent = u;
+	v -> label = label;
 	return v;
 }
 
@@ -103,10 +105,11 @@ struct Node * create_root( struct TSwitch sw )
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
 	v -> parent = NULL;
 	v -> visited = false;
+	v -> label = 0;
 	return v;
 }
 
-
+//TODO: instead of a label field in struct Node, compute here an array of labels and use it instead
 struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
 {
 	INT * SA;
@@ -158,8 +161,9 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	Node * last_leaf;
 	Node * ancestor;
 	Node * rightmost_child;
-	last_leaf = create_leaf( root, SA[0], 0, n, seq, sw );
-
+	INT label = 1;
+	last_leaf = create_leaf( root, SA[0], 0, n, label, seq, sw );
+	label++;
 	for(INT i = 1; i < n; i++)
 	{
 		rightmost_child = last_leaf;
@@ -173,14 +177,17 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 		
 		if( ancestor -> depth == LCP[i] )
 		{	
-			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, seq, sw);
+			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, label, seq, sw );
+			label++;
 		}
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], n, seq, sw  );
+			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq, sw );
+			label++;
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
-			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, seq, sw);	
+			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, label, seq, sw );	
+			label ++;
 		}
 	}
   
@@ -216,28 +223,30 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 		}
 	}
 	for(auto v: traversal)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", v -> start, v -> depth );
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
 	return( traversal );
 }
 
-//I think it is better to output euler_tour and level
-list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw )
+Node** euler_tour( Node * tree, Node * current_node, struct TSwitch sw, INT euler_size )
 {
 	stack<Node *> S;
 	stack<bool> last_child;
 	INT d = 1;
 	S.push(current_node);
 	last_child.push(true);
-	list<Node *> tour;
-	list<INT> level;
+	Node ** tour = ( struct Node ** ) calloc (2*euler_size -1, sizeof(struct Node *));
+	INT level[2*euler_size-1];
+	INT R[euler_size];
+	INT index = 0;
 	while(!S.empty())
 	{
 		current_node = S.top();
 		if(!current_node -> visited)
 		{
-			tour.push_back(current_node);
-			level.push_back(d);
-			fprintf ( stderr, "level of (START:%ld,DEPTH:%ld): %ld\n", current_node -> start, current_node -> depth, d );
+			tour[index] = current_node;
+			level[index] = d;
+			R[current_node -> label] = index;
+			index++;
 			current_node -> visited = true;
 			if( current_node -> children != NULL )
 			{
@@ -255,18 +264,24 @@ list<Node*> euler_tour( Node * tree, Node * current_node, struct TSwitch sw )
 		else
 		{	
 			S.pop();
-			tour.push_back(current_node -> parent);
-			level.push_back(d - 1);
-			fprintf ( stderr, "level of (START:%ld,DEPTH:%ld): %ld\n", current_node -> start, current_node -> depth, d - 1);
+
+			if(index < 2*euler_size -1)
+			{
+				tour[index] = current_node -> parent;
+				level[index] = d-1;
+				index++;
+			}
+
 			if( last_child.top() )	
 				d--;
 			last_child.pop();
 			current_node -> visited = false;	
 		}
 	}
-	tour.pop_back();
-	//for(auto v: tour)
-	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", v -> start, v -> depth );
+	for(int i=0; i<2*euler_size -1; i++)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", tour[i] -> start, tour[i] -> depth, level[i], tour[i] -> label );
+	for(int i=0; i<euler_size; i++)
+		fprintf ( stderr, "R[%d] = %ld\n", i, R[i] );
 	return( tour );
 }
 

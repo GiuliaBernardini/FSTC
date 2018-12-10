@@ -181,7 +181,9 @@ int main(int argc, char **argv)
 
 		Node * tree;	
 		tree = construct_suffix_tree ( seq, seq_id, sw );
-		euler_tour( tree, tree, sw );
+		list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
+		INT euler_size = tree_DFS.size();
+		euler_tour( tree, tree, sw, euler_size );
 		iterative_STfree( tree, tree, sw );
 	}
 		
