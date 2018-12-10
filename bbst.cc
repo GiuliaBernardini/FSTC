@@ -1,3 +1,5 @@
+/* Taken from https://github.com/kowallus/BbST under GNU GPL*/
+
 #include <algorithm>
 #include <iostream>
 #include <numeric>

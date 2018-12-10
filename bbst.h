@@ -1,3 +1,5 @@
+/* Taken from https://github.com/kowallus/BbST under GNU GPL*/
+
 #ifndef SBRMA2_NOC_H
 #define SBRMA2_NOC_H
 

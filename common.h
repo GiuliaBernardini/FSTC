@@ -1,3 +1,5 @@
+/* Taken from https://github.com/kowallus/BbST under GNU GPL*/
+
 #ifndef COMMON_H
 #define COMMON_H
 
