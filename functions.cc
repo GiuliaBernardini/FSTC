@@ -213,8 +213,8 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	//	fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
 	/* Create the queries */
-	INT **leaf_couples = (INT**)malloc((euler_size - n - 1)*sizeof(INT*));
-	for(INT i=0; i<euler_size - n - 1; i++)
+	INT **leaf_couples = (INT**)malloc((ds . size - n - 1)*sizeof(INT*));
+	for(INT i=0; i< ds . size - n - 1; i++)
 	{
 		leaf_couples[i] = (INT*)malloc(2*sizeof(INT));
 		leaf_couples[i][0] = -1;
@@ -224,7 +224,7 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	stack<INT> internal_nodes;
 	INT node_id;
 	INT leaf_label;
-	for(INT i=0; i<2*euler_size -2; i++)
+	for(INT i=0; i<2*ds . size -2; i++)
 	{
 		if(ds . E[i] -> label > n )
 			internal_nodes.push(ds . E[i] -> label);
@@ -243,13 +243,13 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 				}	
 			}
 	}	
-	for(INT i=0; i < euler_size - n - 1; i++)
+	for(INT i=0; i < ds . size - n - 1; i++)
 		fprintf ( stderr, "internal node with label %ld: (%ld,%ld)\n", i+n+1, leaf_couples[i][0], leaf_couples[i][1]);
 
 	/* Answer the queries */
 
 	/* Add the links */
-	for(INT i=0; i<euler_size - n - 1; i++)
+	for(INT i=0; i < ds . size - n - 1; i++)
 		free(leaf_couples[i]);
 	free(leaf_couples);
 	free ( ds . E );
