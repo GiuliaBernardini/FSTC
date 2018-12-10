@@ -2,15 +2,15 @@ MF=     Makefile.64-bit.gcc
  
 CC=     g++
  
-CFLAGS= -g -msse3 -O3 -fomit-frame-pointer -funroll-loops 
+CFLAGS= -g -msse3 -O3 -fomit-frame-pointer -funroll-loops -fopenmp 
  
 LFLAGS= -std=c++11 -O3 -DNDEBUG -I ./libsdsl/include/ -L ./libsdsl/lib/ -lsdsl -ldivsufsort -ldivsufsort64 -Wl,-rpath=$(PWD)/libsdsl/lib
  
 EXE=    fstc
  
-SRC=    fstc.cc input.cc functions.cc
+SRC=    fstc.cc input.cc functions.cc bbst.cc
  
-HD=     fstcdefs.h Makefile.64-bit.gcc
+HD=     fstcdefs.h Makefile.64-bit.gcc bbst.h common.h
  
 # 
 # No need to edit below this line 
