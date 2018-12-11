@@ -243,7 +243,7 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 				}	
 			}
 	}	
-	for(INT i=0; i < ds . size - n - 1; i++)
+	//for(INT i=0; i < ds . size - n - 1; i++)
 		//fprintf ( stderr, "internal node with label %ld: (%ld,%ld)\n", i+n+1, leaf_couples[i][0], leaf_couples[i][1]);
 
 	/*add the links for terminal internal nodes*/
@@ -251,14 +251,19 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	{		
 		INT node_id = ds.R[i];
 		if(ds.E[node_id] -> children[0]!= NULL)
-		{
-			INT count_children = 0;
-			for(INT j=0; j<sw.sigma; j++)
-				count_children ++;
+		{ 	
+			INT count_children = 1;
+			for(INT j=1; j<sw.sigma; j++)
+				if(ds.E[node_id] -> children[j] != NULL)
+					count_children ++;
 			if(count_children ==2)
 			{
 				INT dollar_leaf_label = ds.E[node_id] -> children[0] -> label;
-				ds.E[node_id] -> slink = ds.E[ds.R[dollar_leaf_label + 1]] -> parent;
+				INT following_leaf = ds.R[dollar_leaf_label + 1];
+				if(dollar_leaf_label + 1 < n)
+					ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
+				else
+					ds.E[node_id] -> slink = ds.E[following_leaf];
 				fprintf ( stderr, "slink of node labeled %ld: %ld\n", ds.E[node_id]->label, ds.E[node_id]->slink->label);
 			}
 		}
