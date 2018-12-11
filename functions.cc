@@ -80,6 +80,7 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	v -> parent = p;
 	v -> visited = false;
 	v -> label = label;
+	v -> slink = NULL;
 	return v;
 }
 
@@ -212,40 +213,6 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	//for(int i=0; i<euler_size; i++)
 	//	fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
-	/* Create the queries */
-	INT **leaf_couples = (INT**)malloc((ds . size - n - 1)*sizeof(INT*));
-	for(INT i=0; i< ds . size - n - 1; i++)
-	{
-		leaf_couples[i] = (INT*)malloc(2*sizeof(INT));
-		leaf_couples[i][0] = -1;
-		leaf_couples[i][1] = -1; 
-		//fprintf ( stderr, "came here: i= %ld\n", i );
-	}
-	stack<INT> internal_nodes;
-	INT node_id;
-	INT leaf_label;
-	for(INT i=0; i<2*ds . size -2; i++)
-	{
-		if(ds . E[i] -> label > n )
-			internal_nodes.push(ds . E[i] -> label);
-		else 
-			if(ds . E[i] -> label < n)
-			{	
-				leaf_label = ds . E[i] -> label;
-				while(!internal_nodes.empty())
-				{
-					node_id = internal_nodes.top() - n - 1; 
-					if(leaf_couples[node_id][0] < 0)
-						leaf_couples[node_id][0] = leaf_label;
-					else if(leaf_couples[node_id][1] <= 0)
-						leaf_couples[node_id][1] = leaf_label;
-					internal_nodes.pop();
-				}	
-			}
-	}	
-	//for(INT i=0; i < ds . size - n - 1; i++)
-		//fprintf ( stderr, "internal node with label %ld: (%ld,%ld)\n", i+n+1, leaf_couples[i][0], leaf_couples[i][1]);
-
 	/*add the links for terminal internal nodes*/
 	for(INT i=n+1; i < ds . size; i++)
 	{		
@@ -269,9 +236,44 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 		}
 	}
 
+
+	/* Create the queries */
+	INT **leaf_couples = (INT**)malloc((ds . size - n - 1)*sizeof(INT*));
+	for(INT i=0; i< ds . size - n - 1; i++)
+	{
+		leaf_couples[i] = (INT*)malloc(2*sizeof(INT));
+		leaf_couples[i][0] = -1;
+		leaf_couples[i][1] = -1; 
+		//fprintf ( stderr, "came here: i= %ld\n", i );
+	}
+	stack<INT> internal_nodes;
+	INT node_id;
+	INT leaf_label;
+	for(INT i=0; i<2*ds . size -2; i++)
+	{
+		if((ds . E[i] -> label > n) && (ds . E[i] -> slink == NULL))
+			internal_nodes.push(ds . E[i] -> label);
+		else 
+			if(ds . E[i] -> label < n)
+			{	
+				leaf_label = ds . E[i] -> label;
+				while(!internal_nodes.empty())
+				{
+					node_id = internal_nodes.top() - n - 1; 
+					if(leaf_couples[node_id][0] < 0)
+						leaf_couples[node_id][0] = leaf_label;
+					else if(leaf_couples[node_id][1] <= 0)
+						leaf_couples[node_id][1] = leaf_label;
+					internal_nodes.pop();
+				}	
+			}
+	}	
+	
+
 	/* Answer the queries */
 
 	/* Add the links */
+
 	for(INT i=0; i < ds . size - n - 1; i++)
 		free(leaf_couples[i]);
 	free(leaf_couples);
