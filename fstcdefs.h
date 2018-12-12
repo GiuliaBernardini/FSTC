@@ -21,8 +21,6 @@
 #define DNA                     "ACGTN"                         //DNA alphabet
 #define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
-//#define max(a,b) ((a) > (b)) ? (a) : (b)
-//#define min(a,b) ((a) < (b)) ? (a) : (b)
 
 #include <map>
 #include <stack>
