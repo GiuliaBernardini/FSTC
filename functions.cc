@@ -34,6 +34,7 @@
 
 #include "fstcdefs.h"
 #include <divsufsort64.h>                                         
+#include "rmq-offline.h"
 
 using namespace std;
 
@@ -269,6 +270,7 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 			}
 	}	
 	
+	//See here: https://github.com/solonas13/rmqo/blob/master/examples/example-lca.cc
 
 	/* Answer the queries */
 
