@@ -209,10 +209,10 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
 	euler_tour( tree, tree, sw, &ds );
-	//for(int i=0; i<2*euler_size -1; i++)
-	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
-	//for(int i=0; i<euler_size; i++)
-	//	fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
+	for(int i=0; i<2*ds.size -1; i++)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+	for(int i=0; i<ds.size; i++)
+		fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
 	/*add the links for terminal internal nodes*/
 	for(INT i=n+1; i < ds . size; i++)
@@ -239,13 +239,17 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 
 
 	/* Create the queries */
-	INT **leaf_couples = (INT**)malloc((ds . size - n - 1)*sizeof(INT*));
-	for(INT i=0; i< ds . size - n - 1; i++)
+	//INT **leaf_couples = (INT**)malloc((ds . size - n - 1)*sizeof(INT*));
+
+	Query * Q_lca = ( Query * ) calloc ( ds . size - n - 1 , sizeof( Query ) );
+	for(INT i=0; i < ds . size - n - 1; i++)
 	{
-		leaf_couples[i] = (INT*)malloc(2*sizeof(INT));
-		leaf_couples[i][0] = -1;
-		leaf_couples[i][1] = -1; 
-		//fprintf ( stderr, "came here: i= %ld\n", i );
+		//leaf_couples[i] = (INT*)malloc(2*sizeof(INT));
+		//leaf_couples[i][0] = -1;
+		//leaf_couples[i][1] = -1; 
+		//fprintf ( stderr, "Q_lca.L: %ld, Q_lca.R:%ld\n", Q_lca[i].L, Q_lca[i].R );
+		Q_lca[i] . L = -1;
+		Q_lca[i] . R = -1;
 	}
 	stack<INT> internal_nodes;
 	INT node_id;
@@ -261,24 +265,72 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 				while(!internal_nodes.empty())
 				{
 					node_id = internal_nodes.top() - n - 1; 
-					if(leaf_couples[node_id][0] < 0)
-						leaf_couples[node_id][0] = leaf_label;
-					else if(leaf_couples[node_id][1] <= 0)
-						leaf_couples[node_id][1] = leaf_label;
+					if(Q_lca[node_id] . L  < 0)
+					//if(leaf_couples[node_id][0] < 0)
+						//leaf_couples[node_id][0] = leaf_label;
+						Q_lca[node_id] . L = leaf_label;
+					//else if(leaf_couples[node_id][1] <= 0)
+					else if(Q_lca[node_id] . R < 0)
+						//leaf_couples[node_id][1] = leaf_label;
+						Q_lca[node_id] . R = leaf_label;
 					internal_nodes.pop();
 				}	
 			}
-	}	
-	
+	}
+
 	//See here: https://github.com/solonas13/rmqo/blob/master/examples/example-lca.cc
 
 	/* Answer the queries */
+	INT q = 0;
+	for(INT i = 0 ; i<ds . size - n - 1; i++)
+		if(Q_lca[i] . L >= 0)
+			q++;
+	//fprintf(stderr, "q: %ld\n", q);
+
+	Query * Q = ( Query * ) calloc( q , sizeof( Query ) );
+	INT idx = 0;
+    	for ( INT i = 0; i < ds . size - n - 1; i ++ )  
+    	{
+       		if(Q_lca[i] . L >= 0)
+		{
+			if ( ds.R[Q_lca[i] . L] < ds.R[Q_lca[i] . R] )
+       			{
+	 			 Q[idx] . L = ds.R[Q_lca[i] . L];
+	 			 Q[idx] . R = ds.R[Q_lca[i] . R];
+				 idx++;
+       			}
+       			else
+       			{
+         			 Q[idx] . L = ds.R[Q_lca[i] . R];
+	 			 Q[idx] . R = ds.R[Q_lca[i] . L];
+				 idx++;
+      		 	}
+		}
+   	 }
+	
+	rmq_offline (ds . L, 2*ds . size -1, Q, q );
+	
+	/*Translate the RMQ answers back to LCA answers*/
+	idx = 0;
+    	for ( INT i = 0; i < ds . size - n - 1; i++ )
+		if(Q_lca[i] . L >= 0)
+		{	
+			Q_lca[i] . O = ds . E[Q[idx] . O] -> label;
+			idx++;
+		}
+	
+
+	for ( INT i = 0; i < ds . size - n - 1; i++ )
+    	{	
+      		fprintf( stderr, "LCA(%ld,%ld)=%ld\n", Q_lca[i].L, Q_lca[i].R, Q_lca[i].O);
+   	}
 
 	/* Add the links */
+			
 
-	for(INT i=0; i < ds . size - n - 1; i++)
-		free(leaf_couples[i]);
-	free(leaf_couples);
+
+	free(Q_lca);
+	free(Q);
 	free ( ds . E );
 	free ( ds . L );
 	free ( ds . R );
