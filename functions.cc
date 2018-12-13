@@ -209,12 +209,12 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
 	euler_tour( tree, tree, sw, &ds );
-	for(int i=0; i<2*ds.size -1; i++)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
-	for(int i=0; i<ds.size; i++)
-		fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
+	//for(int i=0; i<2*ds.size -1; i++)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+	//for(int i=0; i<ds.size; i++)
+	//	fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
-	/*add the links for terminal internal nodes*/
+	/*add the suffix links for terminal internal nodes*/
 	for(INT i=n+1; i < ds . size; i++)
 	{		
 		INT node_id = ds.R[i];
@@ -232,7 +232,7 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 					ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
 				else
 					ds.E[node_id] -> slink = ds.E[following_leaf];
-				fprintf ( stderr, "slink of node labeled %ld: %ld\n", ds.E[node_id]->label, ds.E[node_id]->slink->label);
+				//fprintf ( stderr, "slink of node labeled %ld: %ld\n", ds.E[node_id]->label, ds.E[node_id]->slink->label);
 			}
 		}
 	}
@@ -268,11 +268,11 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 					if(Q_lca[node_id] . L  < 0)
 					//if(leaf_couples[node_id][0] < 0)
 						//leaf_couples[node_id][0] = leaf_label;
-						Q_lca[node_id] . L = leaf_label;
+						Q_lca[node_id] . L = leaf_label + 1;
 					//else if(leaf_couples[node_id][1] <= 0)
 					else if(Q_lca[node_id] . R < 0)
 						//leaf_couples[node_id][1] = leaf_label;
-						Q_lca[node_id] . R = leaf_label;
+						Q_lca[node_id] . R = leaf_label + 1;
 					internal_nodes.pop();
 				}	
 			}
@@ -320,13 +320,26 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 		}
 	
 
-	for ( INT i = 0; i < ds . size - n - 1; i++ )
-    	{	
-      		fprintf( stderr, "LCA(%ld,%ld)=%ld\n", Q_lca[i].L, Q_lca[i].R, Q_lca[i].O);
-   	}
+	//for ( INT i = 0; i < ds . size - n - 1; i++ )
+    	//{	
+      	//	fprintf( stderr, "LCA(%ld,%ld)=%ld\n", Q_lca[i].L, Q_lca[i].R, Q_lca[i].O);
+   	//}
 
 	/* Add the links */
-			
+	for ( INT i = 0; i < ds . size - n - 1; i++ )
+    	{	
+		if( Q_lca[i] . L >= 0)
+		{
+			INT node_id = ds . R[i + n + 1];
+			INT slink_id = ds . R[Q_lca[i] . O];
+			ds . E[node_id] -> slink = ds . E[slink_id];
+		}
+	}		
+
+	for ( INT i = n+1; i < ds . size; i++ )
+    	{	
+      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+   	}
 
 
 	free(Q_lca);
