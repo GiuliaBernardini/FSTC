@@ -190,11 +190,12 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 		}
 	}
   
+	free ( SA );
+	free ( LCP );
+
 	/* add the suffix links */
 	construct_sl ( root, sw, n );
 
-	free ( SA );
-	free ( LCP );
 
 	return ( root );
 }
@@ -336,10 +337,10 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 		}
 	}		
 
-	for ( INT i = n+1; i < ds . size; i++ )
-    	{	
-      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
-   	}
+	//for ( INT i = n+1; i < ds . size; i++ )
+    	//{	
+      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+   	//}
 
 
 	free(Q_lca);
