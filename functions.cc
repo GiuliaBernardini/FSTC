@@ -72,6 +72,7 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	INT i = u -> start;
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
+//TODO: instead of sigma space per Node, use hashmaps
 	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
 	v -> start = i; v -> depth = d;
 	if ( i + d == n )		v -> children[0] = u;
