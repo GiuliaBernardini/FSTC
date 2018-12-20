@@ -10,7 +10,7 @@ EXE=    fstc
  
 SRC=    fstc.cc input.cc functions.cc bbst.cc
  
-HD=     fstcdefs.h Makefile.64-bit.gcc bbst.h common.h
+HD=     fstcdefs.h Makefile.64-bit.gcc bbst.h
  
 # 
 # No need to edit below this line 

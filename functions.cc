@@ -35,7 +35,6 @@
 
 #include "fstcdefs.h"
 #include <divsufsort64.h>                                         
-#include "common.h"
 #include "bbst.h"
 
 using namespace std;
