@@ -59,6 +59,10 @@ struct ELR
  	INT		size;
 };
 
+struct Query
+{
+    INT L, R, O;
+};
 
 double gettime( void );
 INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw );
