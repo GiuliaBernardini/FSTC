@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 
 		fprintf( stderr, "Constructing suffix tree of sequence %s of length %ld\n", ( char * ) seq_id, seq_len );
 		
-		/* construct the alphabet  map */
+		/* Construct the alphabet map */
 		unordered_map<unsigned char, INT> u;
 		INT value = 1;
 		for ( INT i = 0; i < seq_len; i++ )
