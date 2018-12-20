@@ -205,7 +205,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 
 struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 {
-	/* Create the queries */
+	/* Create the Euler tour information */
 	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
 	struct ELR ds;
 	ds . size = tree_DFS.size();
@@ -213,10 +213,10 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
 	euler_tour( tree, tree, sw, &ds );
-	for(int i=0; i<2*ds.size -1; i++)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+	//for(int i=0; i<2*ds.size -1; i++)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
 
-	/*add the suffix links for terminal internal nodes*/
+	/* Add the suffix links for terminal internal nodes */
 	for(INT i=n+1; i < ds . size; i++)
 	{		
 		INT node_id = ds.R[i];
@@ -239,7 +239,7 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	}
 
 
-	/* Create the queries */
+	/* Create the LCA queries */
 	Query * Q_lca = ( Query * ) calloc ( ds . size - n - 1 , sizeof( Query ) );
 	for(INT i=0; i < ds . size - n - 1; i++)
 	{
@@ -270,7 +270,7 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	}
 
 
-	/* Answer the queries */
+	/* Translate the LCA queries to RMQs */
 	INT q = 0;
 	for(INT i = 0 ; i<ds . size - n - 1; i++)
 	{
@@ -298,14 +298,15 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 
     	t_array_size* resultLoc = new t_array_size[q];
 
+	/* Answer the RMQs */
 	BbST solver(14);
 	
         solver.rmqBatch(&valuesArray[0], 2*ds.size-1, Q, resultLoc);
 
-	for( INT i = 0; i < q; i++ )
-		fprintf(stderr, "%d\n ", resultLoc[i]);
+	//for( INT i = 0; i < q; i++ )
+	//	fprintf(stderr, "%d\n ", resultLoc[i]);
 	
-	/*Translate the RMQ answers back to LCA answers*/
+	/* Translate the RMQ answers back to LCA answers */
 	idx = 0;
     	for ( INT i = 0; i < ds . size - n - 1; i++ )
 		if(Q_lca[i] . L >= 0)
@@ -314,8 +315,7 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 			idx++;
 		}
 	
-
-	/* Add the links */
+	/* Add the rest of the suffix links */
 	for ( INT i = 0; i < ds . size - n - 1; i++ )
     	{	
 		if( Q_lca[i] . L >= 0)
@@ -326,10 +326,10 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 		}
 	}		
 
-	for ( INT i = n+1; i < ds . size; i++ )
-    	{	
-      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
-   	}
+	//for ( INT i = n+1; i < ds . size; i++ )
+    	//{	
+      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+   	//}
 
 
 	free(Q_lca);
