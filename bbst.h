@@ -3,12 +3,12 @@
 #ifndef SBRMA2_NOC_H
 #define SBRMA2_NOC_H
 
+#define MAX_T_VALUE INT64_MAX
+#define MAX_T_ARRAYSIZE INT64_MAX
+typedef long int t_value;
+typedef long int t_array_size;
+
 #include <vector>
-#define MAX_T_VALUE INT32_MAX
-#define MAX_T_ARRAYSIZE UINT32_MAX
-typedef int32_t t_value;
-typedef unsigned int t_array_size;
-typedef long long int t_array_size_2x;
 
 using namespace std;
 
@@ -54,6 +54,5 @@ private:
     void cleanup();
 
 };
-
 
 #endif //SBRMA2_NOC_H

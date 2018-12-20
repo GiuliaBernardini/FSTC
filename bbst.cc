@@ -1,4 +1,4 @@
-/* Taken from https://github.com/kowallus/BbST under GNU GPL*/
+/* Taken from https://github.com/kowallus/BbST under GNU GPL */
 
 #include <algorithm>
 #include <iostream>
