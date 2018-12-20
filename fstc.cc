@@ -30,8 +30,11 @@
 #include <stack>
 #include <list>
 #include <algorithm>
+#include <vector>
 
 #include "fstcdefs.h"
+#include "common.h"
+#include "bbst.h"
 
 int main(int argc, char **argv)
 {

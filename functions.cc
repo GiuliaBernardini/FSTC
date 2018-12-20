@@ -31,10 +31,13 @@
 #include <algorithm>
 #include <stack>
 #include <list>
+#include <vector>
 
 #include "fstcdefs.h"
 #include <divsufsort64.h>                                         
 #include "rmq-offline.h"
+#include "common.h"
+#include "bbst.h"
 
 using namespace std;
 
@@ -194,7 +197,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 	free ( LCP );
 
 	/* add the suffix links */
-	construct_sl ( root, sw, n );
+	construct_sl_BbST ( root, sw, n );
 
 
 	return ( root );
@@ -210,8 +213,8 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
 	euler_tour( tree, tree, sw, &ds );
-	//for(int i=0; i<2*ds.size -1; i++)
-	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+	for(int i=0; i<2*ds.size -1; i++)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
 	//for(int i=0; i<ds.size; i++)
 	//	fprintf ( stderr, "R[%d] = %ld\n", i, ds . R[i] );
 
@@ -337,10 +340,10 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 		}
 	}		
 
-	//for ( INT i = n+1; i < ds . size; i++ )
-    	//{	
-      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
-   	//}
+	for ( INT i = n+1; i < ds . size; i++ )
+    	{	
+      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+   	}
 
 
 	free(Q_lca);
@@ -350,6 +353,143 @@ struct Node * construct_sl( struct Node * tree, struct TSwitch sw, INT n )
 	free ( ds . R );
 	return ( tree );
 }
+
+struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
+{
+	/* Create the queries */
+	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
+	struct ELR ds;
+	ds . size = tree_DFS.size();
+	ds . E = ( struct Node ** ) calloc (2 * ds . size -1, sizeof(struct Node *));
+	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
+	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
+	euler_tour( tree, tree, sw, &ds );
+	for(int i=0; i<2*ds.size -1; i++)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+
+	/*add the suffix links for terminal internal nodes*/
+	for(INT i=n+1; i < ds . size; i++)
+	{		
+		INT node_id = ds.R[i];
+		if(ds.E[node_id] -> children[0]!= NULL)
+		{ 	
+			INT count_children = 1;
+			for(INT j=1; j<sw.sigma; j++)
+				if(ds.E[node_id] -> children[j] != NULL)
+					count_children ++;
+			if(count_children ==2)
+			{
+				INT dollar_leaf_label = ds.E[node_id] -> children[0] -> label;
+				INT following_leaf = ds.R[dollar_leaf_label + 1];
+				if(dollar_leaf_label + 1 < n)
+					ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
+				else
+					ds.E[node_id] -> slink = ds.E[following_leaf];
+			}
+		}
+	}
+
+
+	/* Create the queries */
+	Query * Q_lca = ( Query * ) calloc ( ds . size - n - 1 , sizeof( Query ) );
+	for(INT i=0; i < ds . size - n - 1; i++)
+	{
+		Q_lca[i] . L = -1;
+		Q_lca[i] . R = -1;
+	}
+	stack<INT> internal_nodes;
+	INT node_id;
+	INT leaf_label;
+	for(INT i=0; i<2*ds . size -2; i++)
+	{
+		if((ds . E[i] -> label > n) && (ds . E[i] -> slink == NULL))
+			internal_nodes.push(ds . E[i] -> label);
+		else 
+			if(ds . E[i] -> label < n)
+			{	
+				leaf_label = ds . E[i] -> label;
+				while(!internal_nodes.empty())
+				{
+					node_id = internal_nodes.top() - n - 1; 
+					if(Q_lca[node_id] . L  < 0)
+						Q_lca[node_id] . L = leaf_label + 1;
+					else if(Q_lca[node_id] . R < 0)
+						Q_lca[node_id] . R = leaf_label + 1;
+					internal_nodes.pop();
+				}	
+			}
+	}
+
+
+	/* Answer the queries */
+	INT q = 0;
+	for(INT i = 0 ; i<ds . size - n - 1; i++)
+	{
+		if(Q_lca[i] . L >= 0)
+			q++;
+	}
+
+	vector<t_array_size> Q(2*q);
+	INT idx = 0;
+
+	for ( INT i = 0; i < ds . size - n - 1; i ++ )  
+    	{
+       		if(Q_lca[i] . L >= 0)
+		{
+       			 Q[2*idx] = ds.R[Q_lca[i] . L];
+ 			 Q[2*idx + 1] = ds.R[Q_lca[i] . R];
+			 idx++;
+		}
+   	 }
+
+	vector<t_value> valuesArray(2*ds . size - 1);
+	
+	for(INT i = 0; i < 2*ds.size - 1; i++)
+		valuesArray[i] = ds.L[i];
+
+    	t_array_size* resultLoc = new t_array_size[q];
+
+	BbST solver(14);
+	
+        solver.rmqBatch(&valuesArray[0], 2*ds.size-1, Q, resultLoc);
+
+	for( INT i = 0; i < q; i++ )
+		fprintf(stderr, "%d\n ", resultLoc[i]);
+	
+	/*Translate the RMQ answers back to LCA answers*/
+	idx = 0;
+    	for ( INT i = 0; i < ds . size - n - 1; i++ )
+		if(Q_lca[i] . L >= 0)
+		{	
+			Q_lca[i] . O = ds . E[resultLoc[idx]] -> label;
+			idx++;
+		}
+	
+
+	/* Add the links */
+	for ( INT i = 0; i < ds . size - n - 1; i++ )
+    	{	
+		if( Q_lca[i] . L >= 0)
+		{
+			INT node_id = ds . R[i + n + 1];
+			INT slink_id = ds . R[Q_lca[i] . O];
+			ds . E[node_id] -> slink = ds . E[slink_id];
+		}
+	}		
+
+	for ( INT i = n+1; i < ds . size; i++ )
+    	{	
+      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+   	}
+
+
+	free(Q_lca);
+	free ( ds . E );
+	free ( ds . L );
+	free ( ds . R );
+	return ( tree );
+}
+
 
 list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
