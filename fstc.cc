@@ -174,8 +174,8 @@ int main(int argc, char **argv)
 		
 		for ( INT i = 0; i < sw . sigma; i++ )	sw . mapping[sw.alphabet_string[i]] = i+1;
 		
-		fprintf( stderr, "Alphabet size: %ld\n", sw . sigma);
-		fprintf( stderr, "Letters and ranks: ");
+		fprintf( stderr, " Alphabet size: %ld\n", sw . sigma);
+		fprintf( stderr, " Letters and ranks: ");
 		for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
 		fprintf( stderr, "\n");
 		sw . sigma = sw . sigma + 1;	//increase by one for $

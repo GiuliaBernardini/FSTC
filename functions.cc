@@ -133,6 +133,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
                 fprintf(stderr, " Error: SA computation failed.\n" );
                 exit( EXIT_FAILURE );
 	}
+        fprintf(stderr, " SA computed\n" );
 
         /* Compute the inverse SA array */
         invSA = ( INT * ) calloc( n , sizeof( INT ) );
@@ -144,6 +145,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 
         for ( INT i = 0; i < n; i ++ )	invSA [SA[i]] = i;
 
+	/* Compute the LCP array */
 	LCP = ( INT * ) calloc  ( n, sizeof( INT ) );
 	if( ( LCP == NULL) )
 	{
@@ -151,15 +153,15 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
                 exit( EXIT_FAILURE );
 	}
 
-	/* Compute the LCP array */
         if( LCParray( seq, n, SA, invSA, LCP ) != 1 )
         {
                 fprintf(stderr, " Error: LCP computation failed.\n" );
                 exit( EXIT_FAILURE );
         }
+        fprintf(stderr, " LCP array computed\n" );
 	free ( invSA );
 	
-	/* construct the suffix tree */
+	/* Construct the suffix tree */
 	Node * root = create_root( sw );
 	root -> label = n;
 	Node * last_leaf;
@@ -191,13 +193,15 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq, sw );	
 		}
 	}
+        fprintf(stderr, " ST constructed\n" );
   
 	free ( SA );
 	free ( LCP );
 
-	/* add the suffix links */
+	/* Add the suffix links */
 	construct_sl_BbST ( root, sw, n );
-
+        
+	fprintf(stderr, " Suffix links added\n" );
 
 	return ( root );
 }
@@ -205,7 +209,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 
 struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 {
-	/* Create the Euler tour information */
+	/* Compute the Euler tour information */
 	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
 	struct ELR ds;
 	ds . size = tree_DFS.size();
@@ -217,23 +221,20 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
 
 	/* Add the suffix links for terminal internal nodes */
-	for(INT i=n+1; i < ds . size; i++)
+	for(INT i = n + 1; i < ds . size; i++)
 	{		
 		INT node_id = ds.R[i];
-		if(ds.E[node_id] -> children[0]!= NULL)
+		if( ds.E[node_id] -> children[0] != NULL )
 		{ 	
 			INT count_children = 1;
-			for(INT j=1; j<sw.sigma; j++)
-				if(ds.E[node_id] -> children[j] != NULL)
-					count_children ++;
-			if(count_children ==2)
+			for(INT j = 1; j < sw.sigma; j++)
+				if( ds.E[node_id] -> children[j] != NULL )	count_children++;
+			if( count_children == 2 )
 			{
-				INT dollar_leaf_label = ds.E[node_id] -> children[0] -> label;
-				INT following_leaf = ds.R[dollar_leaf_label + 1];
-				if(dollar_leaf_label + 1 < n)
-					ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
-				else
-					ds.E[node_id] -> slink = ds.E[following_leaf];
+				INT dollar_leaf_label = ds . E[node_id] -> children[0] -> label;
+				INT following_leaf = ds . R[dollar_leaf_label + 1];
+				if( dollar_leaf_label + 1 < n )	ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
+				else				ds.E[node_id] -> slink = ds.E[following_leaf];
 			}
 		}
 	}
@@ -241,18 +242,18 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 
 	/* Create the LCA queries */
 	Query * Q_lca = ( Query * ) calloc ( ds . size - n - 1 , sizeof( Query ) );
-	for(INT i=0; i < ds . size - n - 1; i++)
+	for(INT i = 0; i < ds . size - n - 1; i++)
 	{
 		Q_lca[i] . L = -1;
 		Q_lca[i] . R = -1;
 	}
+
 	stack<INT> internal_nodes;
 	INT node_id;
 	INT leaf_label;
-	for(INT i=0; i<2*ds . size -2; i++)
+	for(INT i = 0; i < 2*ds . size -2; i++)
 	{
-		if((ds . E[i] -> label > n) && (ds . E[i] -> slink == NULL))
-			internal_nodes.push(ds . E[i] -> label);
+		if((ds . E[i] -> label > n) && (ds . E[i] -> slink == NULL))	internal_nodes.push(ds . E[i] -> label);
 		else 
 			if(ds . E[i] -> label < n)
 			{	
@@ -260,10 +261,8 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 				while(!internal_nodes.empty())
 				{
 					node_id = internal_nodes.top() - n - 1; 
-					if(Q_lca[node_id] . L  < 0)
-						Q_lca[node_id] . L = leaf_label + 1;
-					else if(Q_lca[node_id] . R < 0)
-						Q_lca[node_id] . R = leaf_label + 1;
+					if( Q_lca[node_id] . L  < 0 )		Q_lca[node_id] . L = leaf_label + 1;
+					else if( Q_lca[node_id] . R < 0 )	Q_lca[node_id] . R = leaf_label + 1;
 					internal_nodes.pop();
 				}	
 			}
@@ -273,10 +272,7 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	/* Translate the LCA queries to RMQs */
 	INT q = 0;
 	for(INT i = 0 ; i<ds . size - n - 1; i++)
-	{
-		if(Q_lca[i] . L >= 0)
-			q++;
-	}
+		if(Q_lca[i] . L >= 0)	q++;
 
 	vector<t_array_size> Q(2*q);
 	INT idx = 0;
@@ -293,10 +289,9 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 
 	vector<t_value> valuesArray(2*ds . size - 1);
 	
-	for(INT i = 0; i < 2*ds.size - 1; i++)
-		valuesArray[i] = ds.L[i];
+	for(INT i = 0; i < 2*ds.size - 1; i++)	valuesArray[i] = ds.L[i];
 
-    	t_array_size* resultLoc = new t_array_size[q];
+    	t_array_size * resultLoc = new t_array_size[q];
 
 	/* Answer the RMQs */
 	BbST solver(14);
@@ -331,8 +326,7 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
       	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
    	//}
 
-
-	free(Q_lca);
+	free ( Q_lca );
 	free ( ds . E );
 	free ( ds . L );
 	free ( ds . R );
