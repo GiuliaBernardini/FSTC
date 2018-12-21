@@ -330,6 +330,7 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	free ( ds . E );
 	free ( ds . L );
 	free ( ds . R );
+	delete[] resultLoc;
 	return ( tree );
 }
 
