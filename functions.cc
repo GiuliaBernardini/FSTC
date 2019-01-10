@@ -61,12 +61,33 @@ INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 	return ( 1 );
 }
 
-struct Node* child(Node *u, unsigned char c, struct TSwitch sw)
+/*struct Node* child(Node *u, unsigned char c, struct TSwitch sw)
 {
 	if(u -> children[sw . mapping[c]] != NULL)	return u -> children[sw . mapping[c]];
 	else						return NULL;
+}*/
+
+struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
+{
+	INT i = u -> start;
+	Node * p = u -> parent;
+	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
+	//struct Node * v = new struct Node();
+	v -> children = new map<char,Node*>;
+	v -> start = i; v -> depth = d;
+	if ( i + d == n )		v -> children -> emplace( '$' , u );
+	else				v -> children -> emplace( sw . mapping[seq[i+d]] , u );
+	u -> parent = v;
+	if ( i + p -> depth == n )	p -> children -> emplace( '$' , v );
+	else				p -> children -> emplace( sw . mapping[seq[i+p->depth]] , v );
+	v -> parent = p;
+	v -> visited = false;
+	v -> label = label;
+	v -> slink = NULL;
+	return v;
 }
 
+/*
 struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
 {
 	INT i = u -> start;
@@ -87,15 +108,15 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	return v;
 }
 
-
+*/
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-	v -> children = NULL;
+	v -> children = new map<char,Node*>;
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
-	u -> children[sw . mapping[seq[i+d]]] = v;
+	u -> children -> emplace (sw . mapping[seq[i+d]] , v);
 	v -> parent = u;
 	v -> label = label;
 	return v;
@@ -106,14 +127,14 @@ struct Node * create_root( struct TSwitch sw )
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
+	//v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
+	v -> children = new map<char,Node*>;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
 }
 
-//TODO: instead of a label field in struct Node, compute here an array of labels and use it instead
-struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
+struct Node * construct_suffix_tree_offline ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
 {
 	INT * SA;
 	INT * LCP;
@@ -183,23 +204,27 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 		if( ancestor -> depth == LCP[i] )
 		{	
 			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq, sw );
+			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", ancestor -> label, (int)ancestor -> children -> size());
+			
 		}
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq, sw );
+			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq, sw );			
 			label++;
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
 			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq, sw );	
+			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", new_node -> label, (int)new_node -> children -> size());
 		}
 	}
         fprintf(stderr, " ST constructed\n" );
+	//iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
   
 	free ( SA );
 	free ( LCP );
 
 	/* Add the suffix links */
-	construct_sl_BbST ( root, sw, n );
+	construct_sl_BbST_offline ( root, sw, n );
         
 	fprintf(stderr, " Suffix links added\n" );
 
@@ -207,7 +232,7 @@ struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_i
 }
 
 
-struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
+struct Node * construct_sl_BbST_offline( struct Node * tree, struct TSwitch sw, INT n )
 {
 	/* Compute the Euler tour information */
 	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
@@ -224,14 +249,16 @@ struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n )
 	for(INT i = n + 1; i < ds . size; i++)
 	{		
 		INT node_id = ds.R[i];
-		if( ds.E[node_id] -> children[0] != NULL )
+//		if( ds.E[node_id] -> children[0] != NULL )
+		if( ds.E[node_id] -> children -> count ('$') != 0 )
 		{ 	
-			INT count_children = 1;
+			/*INT count_children = 1;
 			for(INT j = 1; j < sw.sigma; j++)
 				if( ds.E[node_id] -> children[j] != NULL )	count_children++;
-			if( count_children == 2 )
+			*/
+			if( ds.E[node_id] -> children -> size() == 2 )
 			{
-				INT dollar_leaf_label = ds . E[node_id] -> children[0] -> label;
+				INT dollar_leaf_label = ds . E[node_id] -> children -> find('$') -> second -> label;
 				INT following_leaf = ds . R[dollar_leaf_label + 1];
 				if( dollar_leaf_label + 1 < n )	ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
 				else				ds.E[node_id] -> slink = ds.E[following_leaf];
@@ -343,17 +370,28 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	while(!S.empty())
 	{
 		current_node = S.top();
+		fprintf(stderr, "DFS current node: %ld with %d children\n", current_node -> label, (int)current_node -> children -> size());
 		if(!current_node -> visited)
 		{
 			current_node -> visited = true;
-			if( current_node -> children != NULL )
-				for(INT i = sw.sigma -1; i >=0; i--)
+//			if( current_node -> children != NULL )
+			if( ! current_node -> children -> empty() )
+			{
+				fprintf(stderr, "node %ld has %d children\n", current_node -> label, (int)current_node -> children -> size());
+				/*for(INT i = sw.sigma -1; i >= 0; i--)
 					if (current_node -> children[i] != NULL)	
-						S.push(current_node -> children[i]);
+						S.push(current_node -> children[i]); */
+				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
+				{
+					S . push ( it -> second );
+					fprintf(stderr, "here I pushed node %ld\n", it -> second -> label);
+				}
+			}
 		}
 		else
 		{	
 			S.pop();
+			//fprintf(stderr, "node: %ld \n", current_node -> label);
 			traversal.push_back(current_node);
 			current_node -> visited = false;	
 		}
@@ -381,16 +419,25 @@ INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR 
 			ds -> R[current_node -> label] = index;
 			index++;
 			current_node -> visited = true;
-			if( current_node -> children != NULL )
+//			if( current_node -> children != NULL )
+			if( ! current_node -> children -> empty() )
 			{
 				d++;
 				last_child.push(true);
-				for(INT i = sw.sigma -1; i >=0; i--)
+				/*for(INT i = sw.sigma -1; i >=0; i--)
 					if (current_node -> children[i] != NULL)
 					{
 						S.push(current_node -> children[i]);
 						last_child.push(false);
-					}
+					} */
+
+//CONTROLLARE: mi serviva che fossero in ordine alfabetico? Perché così è probabile che non lo siano.
+				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
+				{	
+					S . push ( it -> second );
+					last_child . push( false );
+				}
+				
 				last_child.pop();
 			}
 		}
@@ -414,6 +461,7 @@ INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR 
 	return( 1 );
 }
 
+
 INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	stack<Node *> S;
@@ -424,18 +472,22 @@ INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 		if(!current_node -> visited)
 		{
 			current_node -> visited = true;
-			if( current_node -> children != NULL )
+			/*if( current_node -> children != NULL )
 				for(INT i = sw.sigma -1; i >=0; i--)
 					if (current_node -> children[i] != NULL)	
 						S.push(current_node -> children[i]);
+			*/
+			if( ! current_node -> children -> empty() )	
+				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)	
+					S . push ( it -> second );
 		}
 		else
 		{	
 			S.pop();
 			current_node -> visited = false;	
-			free ( current_node -> children );
-			current_node -> children = NULL;
-			free ( current_node );
+			//free ( current_node -> children );
+			//delete (current_node -> children);
+			//free ( current_node );
 			current_node = NULL;
 		}
 	}
@@ -444,6 +496,7 @@ INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 
 /* Test functions */
 
+/*
 INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	current_node -> visited = true;
@@ -478,3 +531,4 @@ INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
 	}
 	return( 1 );
 }
+*/

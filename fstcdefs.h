@@ -25,6 +25,7 @@
 #include <map>
 #include <stack>
 #include <list>
+#include <unordered_map>
 using namespace std;
 
 typedef long int INT;
@@ -43,7 +44,8 @@ struct TSwitch
 struct Node
  {
   	Node		*parent;
-  	Node		**children; //TODO: do it more wisely (hashmaps)
+  	//Node		**children; //TODO: do it more wisely (hashmaps)
+	map<char,Node*> *children;
   	INT  		start;
   	INT 		depth;	
 	Node		*slink;
@@ -74,8 +76,8 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw);
 struct Node * child( Node u, char c, struct TSwitch sw );
 struct Node * create_root( struct TSwitch sw );
-struct Node * construct_sl_BbST( struct Node * tree, struct TSwitch sw, INT n );
-struct Node * construct_suffix_tree ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
+struct Node * construct_sl_BbST_offline( struct Node * tree, struct TSwitch sw, INT n );
+struct Node * construct_suffix_tree_offline( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw );
 
 list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
 INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR * ds );
