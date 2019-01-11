@@ -420,7 +420,7 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	}
 //	for(auto v: traversal)
 //		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
-//	return( traversal );
+	return( traversal );
 }
 
 INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR * ds )
