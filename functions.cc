@@ -75,15 +75,36 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	//struct Node * v = new struct Node();
 	v -> children = new map<char,Node*>;
 	v -> start = i; v -> depth = d;
-	if ( i + d == n )		v -> children -> emplace( '$' , u );
-	else				v -> children -> emplace( sw . mapping[seq[i+d]] , u );
+	if ( i + d == n )
+	{	
+		auto it = v -> children -> find('$');
+		if ( it == v -> children -> end())	v -> children -> emplace( '$' , u );
+		else 					it -> second = u;
+	}
+	else				
+	{	
+		auto it = v -> children -> find(sw . mapping[seq[i+d]]);
+		if ( it == v -> children -> end())	v -> children -> emplace( sw . mapping[seq[i+d]] , u );
+		else 					it -> second = u;
+	}
 	u -> parent = v;
-	if ( i + p -> depth == n )	p -> children -> emplace( '$' , v );
-	else				p -> children -> emplace( sw . mapping[seq[i+p->depth]] , v );
+	if ( i + p -> depth == n )	
+	{	
+		auto it = p -> children -> find('$');
+		if ( it == p -> children -> end())	p -> children -> emplace( '$' , v );
+		else 					it -> second = v;
+	}
+	else				
+	{	
+		auto it = p -> children -> find(sw . mapping[seq[i+p->depth]]);
+		if ( it == p -> children -> end())	p -> children -> emplace( sw . mapping[seq[i+p->depth]] , v );
+		else 					it -> second = v;
+	}	
 	v -> parent = p;
 	v -> visited = false;
 	v -> label = label;
 	v -> slink = NULL;
+//	fprintf(stderr, "I added node %ld over node %ld. Node %ld has now %d children\n", v -> label, u -> label, v -> label, (int)v -> children -> size());
 	return v;
 }
 
@@ -116,9 +137,12 @@ struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned ch
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
-	u -> children -> emplace (sw . mapping[seq[i+d]] , v);
+	auto it = u -> children -> find(sw . mapping[seq[i+d]]);
+	if ( it == u -> children -> end())	u -> children -> emplace( sw . mapping[seq[i+d]] , v );
+	else 					it -> second = v;
 	v -> parent = u;
 	v -> label = label;
+//	fprintf(stderr, "I added leaf %ld to node %ld, which now has %d children\n", v -> label, u -> label, (int)u -> children -> size());
 	return v;
 }
 
@@ -204,7 +228,7 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, unsigned char
 		if( ancestor -> depth == LCP[i] )
 		{	
 			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq, sw );
-			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", ancestor -> label, (int)ancestor -> children -> size());
+//			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", ancestor -> label, (int)ancestor -> children -> size());
 			
 		}
 		else
@@ -214,7 +238,7 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, unsigned char
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
 			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq, sw );	
-			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", new_node -> label, (int)new_node -> children -> size());
+//			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", new_node -> label, (int)new_node -> children -> size());
 		}
 	}
         fprintf(stderr, " ST constructed\n" );
@@ -348,10 +372,8 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, struct TSwitch sw, 
 		}
 	}		
 
-	//for ( INT i = n+1; i < ds . size; i++ )
-    	//{	
-      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
-   	//}
+//	for ( INT i = n+1; i < ds . size; i++ )	
+//      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
 
 	free ( Q_lca );
 	free ( ds . E );
@@ -370,21 +392,21 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	while(!S.empty())
 	{
 		current_node = S.top();
-		fprintf(stderr, "DFS current node: %ld with %d children\n", current_node -> label, (int)current_node -> children -> size());
+//		fprintf(stderr, "DFS current node: %ld with %d children\n", current_node -> label, (int)current_node -> children -> size());
 		if(!current_node -> visited)
 		{
 			current_node -> visited = true;
 //			if( current_node -> children != NULL )
 			if( ! current_node -> children -> empty() )
 			{
-				fprintf(stderr, "node %ld has %d children\n", current_node -> label, (int)current_node -> children -> size());
+//				fprintf(stderr, "node %ld has %d children\n", current_node -> label, (int)current_node -> children -> size());
 				/*for(INT i = sw.sigma -1; i >= 0; i--)
 					if (current_node -> children[i] != NULL)	
 						S.push(current_node -> children[i]); */
 				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
 				{
 					S . push ( it -> second );
-					fprintf(stderr, "here I pushed node %ld\n", it -> second -> label);
+		//			fprintf(stderr, "here I pushed node %ld\n", it -> second -> label);
 				}
 			}
 		}
@@ -396,9 +418,9 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 			current_node -> visited = false;	
 		}
 	}
-	//for(auto v: traversal)
-	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
-	return( traversal );
+//	for(auto v: traversal)
+//		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
+//	return( traversal );
 }
 
 INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR * ds )
@@ -419,19 +441,10 @@ INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR 
 			ds -> R[current_node -> label] = index;
 			index++;
 			current_node -> visited = true;
-//			if( current_node -> children != NULL )
 			if( ! current_node -> children -> empty() )
 			{
 				d++;
 				last_child.push(true);
-				/*for(INT i = sw.sigma -1; i >=0; i--)
-					if (current_node -> children[i] != NULL)
-					{
-						S.push(current_node -> children[i]);
-						last_child.push(false);
-					} */
-
-//CONTROLLARE: mi serviva che fossero in ordine alfabetico? Perché così è probabile che non lo siano.
 				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
 				{	
 					S . push ( it -> second );
@@ -461,7 +474,7 @@ INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR 
 	return( 1 );
 }
 
-
+//TODO: update this functions according to the new implementation of children
 INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 {
 	stack<Node *> S;
