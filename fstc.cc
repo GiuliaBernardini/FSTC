@@ -34,6 +34,7 @@
 
 #include "fstcdefs.h"
 
+
 int main(int argc, char **argv)
 {
 
@@ -181,7 +182,7 @@ int main(int argc, char **argv)
 		sw . sigma = sw . sigma + 1;	//increase by one for $
 
 		Node * tree;	
-		tree = construct_suffix_tree_offline ( seq, seq_id, sw );
+		tree = construct_suffix_tree_online ( seq, seq_id, sw );
 		iterative_STfree( tree, tree, sw );
 	}
 		
