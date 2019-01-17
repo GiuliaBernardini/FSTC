@@ -252,7 +252,7 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, unsigned char
 	/* Add the suffix links */
 	construct_sl_BbST_offline ( root, sw, n );
         
-	fprintf(stderr, " Suffix links added\n" );
+	fprintf(stderr, " Suffix links added with offline RMQs\n" );
 
 	return ( root );
 }
@@ -349,7 +349,7 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq, unsigned char 
 	/* Add the suffix links */
 	construct_sl_online ( root, sw, n );
         
-	fprintf(stderr, " Suffix links added\n" );
+	fprintf(stderr, " Suffix links added with online RMQs\n" );
 
 	return ( root );
 }
@@ -471,8 +471,8 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, struct TSwitch sw, 
 		}
 	}		
 
-	for ( INT i = n+1; i < ds . size; i++ )	
-      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+	//for ( INT i = n+1; i < ds . size; i++ )	
+      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
 
 	free ( Q_lca );
 	free ( ds . E );
@@ -601,8 +601,8 @@ struct Node * construct_sl_online( struct Node * tree, struct TSwitch sw, INT n 
 		}
 	}		
 
-	for ( INT i = n+1; i < ds . size; i++ )	
-     		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+	//for ( INT i = n+1; i < ds . size; i++ )	
+     	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
 
 	free ( Q_lca );
 	free ( ds . E );
