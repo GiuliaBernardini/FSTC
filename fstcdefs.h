@@ -19,7 +19,7 @@
 
 #define ALLOC_SIZE              1048576
 #define DNA                     "ACGTN"                         //DNA alphabet
-#define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
+#define PROT                    "ARNDCQEGHILKMFPSTWYVXZ"          //Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
 
 #include <map>
