@@ -63,13 +63,13 @@ INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 	return ( 1 );
 }
 
-/*struct Node* child(Node *u, unsigned char c, struct TSwitch sw)
+/*struct Node* child(Node *u, unsigned char c, struct TAlphabet sw)
 {
 	if(u -> children[sw . mapping[c]] != NULL)	return u -> children[sw . mapping[c]];
 	else						return NULL;
 }*/
 
-struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
+struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
 {
 	INT i = u -> start;
 	Node * p = u -> parent;
@@ -111,7 +111,7 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 }
 
 /*
-struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
+struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
 {
 	INT i = u -> start;
 	Node * p = u -> parent;
@@ -132,7 +132,7 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 }
 
 */
-struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TSwitch sw )
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = new map<char,Node*>;
@@ -148,7 +148,7 @@ struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned ch
 	return v;
 }
 
-struct Node * create_root( struct TSwitch sw )
+struct Node * create_root( void )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
@@ -160,8 +160,38 @@ struct Node * create_root( struct TSwitch sw )
 	return v;
 }
 
-struct Node * construct_suffix_tree_offline ( unsigned char * seq, struct TSwitch sw )
+struct Node * construct_suffix_tree_offline ( unsigned char * seq, struct TAlphabet sw )
 {
+	INT seq_len = strlen ( (char * )seq );
+
+	/* Construct the alphabet map */
+	unordered_map<unsigned char, INT> u;
+	INT value = 1;
+	for ( INT i = 0; i < seq_len; i++ )
+		if ( u[seq[i]] == 0 )	u[seq[i]] = value++;
+    
+	sw . sigma = 0;
+	for( const auto& a : u )	sw . sigma++;
+	
+	unsigned char * alphabet_string = ( unsigned char * ) calloc ( sw . sigma + 1, sizeof(unsigned char));
+	
+	INT i = 0;
+	for( const auto& a : u ) {
+		alphabet_string[i++]=a.first;
+	}
+	alphabet_string[sw.sigma]=0;
+
+	sort(&alphabet_string[0], &alphabet_string[sw.sigma]);
+	
+	for ( INT i = 0; i < sw . sigma; i++ )	sw . mapping[alphabet_string[i]] = i+1;
+	free ( alphabet_string );
+	
+	fprintf( stderr, " Alphabet size: %ld\n", sw . sigma);
+	fprintf( stderr, " (Letter, Rank): ");
+	for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
+	fprintf( stderr, "\n");
+	sw . sigma = sw . sigma + 1;	//increase by one for $
+
 	INT * SA;
 	INT * LCP;
 	INT * invSA;
@@ -209,7 +239,7 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, struct TSwitc
 	free ( invSA );
 	
 	/* Construct the suffix tree */
-	Node * root = create_root( sw );
+	Node * root = create_root( );
 	root -> label = n;
 	Node * last_leaf;
 	Node * ancestor;
@@ -244,14 +274,14 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, struct TSwitc
 		}
 	}
         fprintf(stderr, " ST constructed\n" );
-	//iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
+	//iterative_DFS( Node * tree, Node * current_node, struct TAlphabet sw );
   
 	free ( SA );
 	free ( LCP );
 
 	/* Add the suffix links */
 	double start = gettime();
-	construct_sl_BbST_offline ( root, sw, n );
+	construct_sl_BbST_offline ( root, n );
 	double end = gettime();
         
 	fprintf(stderr, " Suffix links added with offline RMQs in %lf secs.\n", end - start );
@@ -259,8 +289,38 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, struct TSwitc
 	return ( root );
 }
 
-struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TSwitch sw )
+struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TAlphabet sw )
 {
+	INT seq_len = strlen ( (char * )seq );
+
+	/* Construct the alphabet map */
+	unordered_map<unsigned char, INT> u;
+	INT value = 1;
+	for ( INT i = 0; i < seq_len; i++ )
+		if ( u[seq[i]] == 0 )	u[seq[i]] = value++;
+    
+	sw . sigma = 0;
+	for( const auto& a : u )	sw . sigma++;
+	
+	unsigned char * alphabet_string = ( unsigned char * ) calloc ( sw . sigma + 1, sizeof(unsigned char));
+	
+	INT i = 0;
+	for( const auto& a : u ) {
+		alphabet_string[i++]=a.first;
+	}
+	alphabet_string[sw.sigma]=0;
+
+	sort(&alphabet_string[0], &alphabet_string[sw.sigma]);
+	
+	for ( INT i = 0; i < sw . sigma; i++ )	sw . mapping[alphabet_string[i]] = i+1;
+	free ( alphabet_string );
+	
+	fprintf( stderr, " Alphabet size: %ld\n", sw . sigma);
+	fprintf( stderr, " (Letter, Rank): ");
+	for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
+	fprintf( stderr, "\n");
+	sw . sigma = sw . sigma + 1;	//increase by one for $
+
 	INT * SA;
 	INT * LCP;
 	INT * invSA;
@@ -308,7 +368,7 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TSwitch
 	free ( invSA );
 	
 	/* Construct the suffix tree */
-	Node * root = create_root( sw );
+	Node * root = create_root( );
 	root -> label = n;
 	Node * last_leaf;
 	Node * ancestor;
@@ -343,14 +403,14 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TSwitch
 		}
 	}
         fprintf(stderr, " ST constructed\n" );
-	//iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw );
+	//iterative_DFS( Node * tree, Node * current_node, struct TAlphabet sw );
   
 	free ( SA );
 	free ( LCP );
 
 	/* Add the suffix links */
 	double start = gettime();
-	construct_sl_online ( root, sw, n );
+	construct_sl_online ( root, n );
 	double end = gettime();
         
 	fprintf(stderr, " Suffix links added with online RMQs in %lf secs.\n", end - start );
@@ -359,16 +419,16 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TSwitch
 }
 
 
-struct Node * construct_sl_BbST_offline( struct Node * tree, struct TSwitch sw, INT n )
+struct Node * construct_sl_BbST_offline( struct Node * tree, INT n )
 {
 	/* Compute the Euler tour information */
-	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
+	list<Node *> tree_DFS = iterative_DFS(tree, tree );
 	struct ELR ds;
 	ds . size = tree_DFS.size();
 	ds . E = ( struct Node ** ) calloc (2 * ds . size -1, sizeof(struct Node *));
 	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
-	euler_tour( tree, tree, sw, &ds );
+	euler_tour( tree, tree, &ds );
 	//for(int i=0; i<2*ds.size -1; i++)
 	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
 
@@ -486,16 +546,16 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, struct TSwitch sw, 
 	return ( tree );
 }
 
-struct Node * construct_sl_online( struct Node * tree, struct TSwitch sw, INT n )
+struct Node * construct_sl_online( struct Node * tree, INT n )
 {
 	/* Compute the Euler tour information */
-	list<Node *> tree_DFS = iterative_DFS(tree, tree, sw);
+	list<Node *> tree_DFS = iterative_DFS(tree, tree);
 	struct ELR ds;
 	ds . size = tree_DFS.size();
 	ds . E = ( struct Node ** ) calloc (2 * ds . size -1, sizeof(struct Node *));
 	ds . L = ( INT * ) calloc (2 * ds . size -1, sizeof(INT));
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
-	euler_tour( tree, tree, sw, &ds );
+	euler_tour( tree, tree, &ds );
 	//for(int i=0; i<2*ds.size -1; i++)
 	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
 
@@ -617,7 +677,7 @@ struct Node * construct_sl_online( struct Node * tree, struct TSwitch sw, INT n 
 }
 
 
-list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
+list<Node*> iterative_DFS( Node * tree, Node * current_node )
 {
 	stack<Node *> S;
 	S.push(current_node);
@@ -656,7 +716,7 @@ list<Node*> iterative_DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	return( traversal );
 }
 
-INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR * ds )
+INT euler_tour( Node * tree, Node * current_node, struct ELR * ds )
 {
 	stack<Node *> S;
 	stack<bool> last_child;
@@ -707,7 +767,7 @@ INT euler_tour( Node * tree, Node * current_node, struct TSwitch sw, struct ELR 
 	return( 1 );
 }
 
-INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
+INT iterative_STfree( Node * tree, Node * current_node )
 {
 	stack<Node *> S;
 	S.push(current_node);
@@ -741,7 +801,7 @@ INT iterative_STfree( Node * tree, Node * current_node, struct TSwitch sw )
 /* Test functions */
 
 /*
-INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
+INT DFS( Node * tree, Node * current_node, struct TAlphabet sw )
 {
 	current_node -> visited = true;
 	if( current_node -> children != NULL )
@@ -754,8 +814,7 @@ INT DFS( Node * tree, Node * current_node, struct TSwitch sw )
 	return( 1 );
 }
 
-
-INT STfree( Node * tree, Node * current_node, struct TSwitch sw )
+INT STfree( Node * tree, Node * current_node, struct TAlphabet sw )
 {
 	current_node -> visited = true;
 	if( current_node -> children != NULL )
