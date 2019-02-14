@@ -29,13 +29,12 @@
 #include <unordered_map>
 #include <map>
 #include <algorithm>
-#include <stack>
 #include <list>
 #include <vector>
 #include <sdsl/rmq_support.hpp>
+#include <divsufsort64.h>                                         
 
 #include "fstcdefs.h"
-#include <divsufsort64.h>                                         
 #include "bbst.h"
 
 using namespace sdsl;

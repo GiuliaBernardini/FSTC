@@ -23,15 +23,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include <iostream>
-#include <string>
-#include <unordered_map>
-#include <map>
-#include <stack>
-#include <list>
-#include <algorithm>
-#include <vector>
-
 #include "fstcdefs.h"
 
 int main(int argc, char **argv)
@@ -77,12 +68,13 @@ int main(int argc, char **argv)
 		seq[ seq_len ] = '\0';
 	}
 
+	/* Construct the suffix tree */
 	fprintf( stderr, "Constructing suffix tree of a sequence of length %ld\n", seq_len );
 
 	struct TAlphabet A;
 	Node * tree;	
-	//tree = construct_suffix_tree_offline ( seq, A );
-	tree = construct_suffix_tree_online ( seq, A );
+	tree = construct_suffix_tree_offline ( seq, A );
+	//tree = construct_suffix_tree_online ( seq, A );
 	iterative_STfree( tree, tree );
 		
 	if ( fclose ( in_fd ) )
@@ -90,7 +82,6 @@ int main(int argc, char **argv)
 		fprintf( stderr, " Error: file close error!\n");
 		return ( 1 );
 	}
-
 	double end = gettime();
 
         fprintf( stderr, "Elapsed time for processing sequence: %lf secs\n", ( end - start ) );
