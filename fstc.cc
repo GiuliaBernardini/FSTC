@@ -34,7 +34,6 @@
 
 #include "fstcdefs.h"
 
-
 int main(int argc, char **argv)
 {
 
@@ -42,9 +41,7 @@ int main(int argc, char **argv)
 
 	FILE *          in_fd;                  // the input file descriptor
         char *          input_filename;         // the input file name
-        char *          output_filename;        // the output file name
         unsigned char * seq    = NULL;         	// the sequence in memory
-        unsigned char * seq_id = NULL;         	// the sequence id in memory
         char *          alphabet;               // the alphabet
 	INT    i, j;	
 
@@ -52,25 +49,12 @@ int main(int argc, char **argv)
         i = decode_switches ( argc, argv, &sw );
 
 	/* Check the arguments */
-        if ( i < 3 )
+        if ( i < 1 )
         {
                 usage ();
                 return ( 1 );
         }
-        else
-        {
-                if      ( ! strcmp ( "DNA", sw . alphabet ) )   alphabet = ( char * ) DNA;
-                else if ( ! strcmp ( "PROT", sw . alphabet ) )  alphabet = ( char * ) PROT;
-                else
-                {
-                        fprintf ( stderr, " Error: alphabet argument a should be `DNA' for nucleotide sequences or `PROT' for protein sequences or `USR' for sequences over a user-defined alphabet!\n" );
-                        return ( 1 );
-                }
-
-                input_filename          = sw . input_filename;
-                output_filename         = sw . output_filename;
-        }
-
+        else	input_filename          = sw . input_filename;
 
 	double start = gettime();
 
@@ -82,65 +66,16 @@ int main(int argc, char **argv)
 	}
 
 	char c;
-	c = fgetc( in_fd );
-	if ( c != '>' )
-	{
-		fprintf ( stderr, " Error: input file %s is not in FASTA format!\n", input_filename );
-		return ( 1 );
-	}
-	else
-	{
-		INT max_alloc_seq_id = 0;
-		INT seq_id_len = 0;
-		while ( ( c = fgetc( in_fd ) ) != EOF && c != '\n' )
-		{
-			if ( seq_id_len >= max_alloc_seq_id )
-			{
-				seq_id = ( unsigned char * ) realloc ( seq_id,   ( max_alloc_seq_id + ALLOC_SIZE ) * sizeof ( unsigned char ) );
-				max_alloc_seq_id += ALLOC_SIZE;
-			}
-			seq_id[ seq_id_len++ ] = c;
-		}
-		seq_id[ seq_id_len ] = '\0';
-			
-	}
-
 	INT max_alloc_seq = 0;
 	INT seq_len = 0;
-
-	while ( ( c = fgetc( in_fd ) ) != EOF && c != '>' )
+	while ( ( c = fgetc( in_fd ) ) != EOF )
 	{
-		if( seq_len == 0 && c == '\n' )
-		{
-			fprintf ( stderr, " Omitting empty sequence in file %s!\n", input_filename );
-			c = fgetc( in_fd );
-			break;
-		}
-		if( c == '\n' ) continue;
-			c = toupper( c );
-
 		if ( seq_len >= max_alloc_seq )
 		{
 			seq = ( unsigned char * ) realloc ( seq,   ( max_alloc_seq + ALLOC_SIZE ) * sizeof ( unsigned char ) );
 			max_alloc_seq += ALLOC_SIZE;
 		}
-
-		if( strchr ( alphabet, c ) )
-		{
-			seq[ seq_len++ ] = c;
-		}
-		else
-		{
-			if ( strchr ( IUPAC, c ) )
-			{
-				seq[ seq_len++ ] = 'N';
-			}
-			else
-			{
-				fprintf ( stderr, " Error: input file %s contains an unexpected character %c!\n", input_filename, c );
-				return ( 1 );
-			}
-		}
+		seq[ seq_len++ ] = c;
 	}
 
 	if( seq_len != 0 )
@@ -152,7 +87,7 @@ int main(int argc, char **argv)
 		}
 		seq[ seq_len ] = '\0';
 
-		fprintf( stderr, "Constructing suffix tree of sequence %s of length %ld\n", ( char * ) seq_id, seq_len );
+		fprintf( stderr, "Constructing suffix tree of a sequence of length %ld\n", seq_len );
 		
 		/* Construct the alphabet map */
 		unordered_map<unsigned char, INT> u;
@@ -182,8 +117,8 @@ int main(int argc, char **argv)
 		sw . sigma = sw . sigma + 1;	//increase by one for $
 
 		Node * tree;	
-		//tree = construct_suffix_tree_online ( seq, seq_id, sw );
-		tree = construct_suffix_tree_offline ( seq, seq_id, sw );
+		//tree = construct_suffix_tree_online ( seq, sw );
+		tree = construct_suffix_tree_offline ( seq, sw );
 		iterative_STfree( tree, tree, sw );
 	}
 		
@@ -195,15 +130,11 @@ int main(int argc, char **argv)
 
 	double end = gettime();
 
-        fprintf( stderr, "Elapsed time for processing sequence %s: %lf secs\n", seq_id, ( end - start ) );
+        fprintf( stderr, "Elapsed time for processing sequence: %lf secs\n", ( end - start ) );
 	free ( seq );
 	seq = NULL;
-	free ( seq_id );
-	seq_id = NULL;
 	
         free ( sw . input_filename );
-        free ( sw . output_filename );
-        free ( sw . alphabet );
         free ( sw . alphabet_string );
 
 	return ( 0 );

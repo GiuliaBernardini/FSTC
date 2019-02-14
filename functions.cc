@@ -160,7 +160,7 @@ struct Node * create_root( struct TSwitch sw )
 	return v;
 }
 
-struct Node * construct_suffix_tree_offline ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
+struct Node * construct_suffix_tree_offline ( unsigned char * seq, struct TSwitch sw )
 {
 	INT * SA;
 	INT * LCP;
@@ -250,14 +250,16 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq, unsigned char
 	free ( LCP );
 
 	/* Add the suffix links */
+	double start = gettime();
 	construct_sl_BbST_offline ( root, sw, n );
+	double end = gettime();
         
-	fprintf(stderr, " Suffix links added with offline RMQs\n" );
+	fprintf(stderr, " Suffix links added with offline RMQs in %lf secs.\n", end - start );
 
 	return ( root );
 }
 
-struct Node * construct_suffix_tree_online ( unsigned char * seq, unsigned char * seq_id, struct TSwitch sw )
+struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TSwitch sw )
 {
 	INT * SA;
 	INT * LCP;
@@ -347,9 +349,11 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq, unsigned char 
 	free ( LCP );
 
 	/* Add the suffix links */
+	double start = gettime();
 	construct_sl_online ( root, sw, n );
+	double end = gettime();
         
-	fprintf(stderr, " Suffix links added with online RMQs\n" );
+	fprintf(stderr, " Suffix links added with online RMQs in %lf secs.\n", end - start );
 
 	return ( root );
 }

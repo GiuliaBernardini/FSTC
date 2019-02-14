@@ -26,9 +26,7 @@
 
 static struct option long_options[] =
  {
-   { "alphabet",                required_argument, NULL, 'a' },
    { "input-file",              required_argument, NULL, 'i' },
-   { "output-file",             required_argument, NULL, 'o' },
    { "help",                    no_argument,       NULL, 'h' },
    { NULL,                      0,                 NULL, 0   }
  };
@@ -46,40 +44,25 @@ INT decode_switches ( INT argc, char * argv [], struct TSwitch * sw )
    INT          args;
 
    /* initialisation */
-   sw -> alphabet                       = NULL;
    sw -> alphabet_string                = NULL;
    sw -> input_filename                 = NULL;
-   sw -> output_filename                = NULL;
    args = 0;
 
-   while ( ( opt = getopt_long ( argc, argv, "a:i:o:h", long_options, &oi ) ) != - 1 )
+   while ( ( opt = getopt_long ( argc, argv, "i:h", long_options, &oi ) ) != - 1 )
     {
       switch ( opt )
        {
-         case 'a':
-           sw -> alphabet = ( char * ) malloc ( ( strlen ( optarg ) + 1 ) * sizeof ( char ) );
-           strcpy ( sw -> alphabet, optarg );
-           args ++;
-           break;
-
          case 'i':
            sw -> input_filename = ( char * ) malloc ( ( strlen ( optarg ) + 1 ) * sizeof ( char ) );
            strcpy ( sw -> input_filename, optarg );
            args ++;
            break;
-
-         case 'o':
-           sw -> output_filename = ( char * ) malloc ( ( strlen ( optarg ) + 1 ) * sizeof ( char ) );
-           strcpy ( sw -> output_filename, optarg );
-           args ++;
-           break;
-
          case 'h':
            return ( 0 );
        }
     }
 
-   if ( args < 3 )
+   if ( args < 1 )
      {
        usage ();
        exit ( 1 );
@@ -96,9 +79,6 @@ void usage ( void )
  {
    fprintf ( stdout, " Usage: fstc <options>\n" );
    fprintf ( stdout, " Standard (Mandatory):\n" );
-   fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' for nucleotide  sequences or `PROT'\n"
-                     "                                      for protein  sequences. \n" );
-   fprintf ( stdout, "  -i, --input-file          <str>     FASTA input filename.\n" );
-   fprintf ( stdout, "  -o, --output-file         <str>     Output filename.\n" );
+   fprintf ( stdout, "  -i, --input-file          <str>     Input filename.\n" );
  }
 
