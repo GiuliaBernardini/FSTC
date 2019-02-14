@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
 	double start = gettime();
 
-	/* Read the FASTA file in memory */
+	/* Read the file in memory */
 	if ( ! ( in_fd = fopen ( input_filename, "r") ) )
 	{
 		fprintf ( stderr, " Error: Cannot open file %s!\n", input_filename );
