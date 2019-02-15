@@ -22,7 +22,6 @@
 #include <map>
 #include <stack>
 #include <list>
-#include <unordered_map>
 using namespace std;
 
 typedef long int INT;
@@ -59,12 +58,12 @@ struct Query
 };
 
 double gettime( void );
-void usage ( void );
 
-struct Node * construct_suffix_tree_offline( unsigned char * seq, struct TAlphabet sw );
-struct Node * construct_suffix_tree_online ( unsigned char * seq, struct TAlphabet sw );
+struct Node * construct_suffix_tree_offline( unsigned char * seq );
+struct Node * construct_suffix_tree_online ( unsigned char * seq );
+INT iterative_STfree( Node * tree );
+
 INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
-
 struct Node * create_root( void );
 struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw );
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw);
@@ -72,6 +71,5 @@ struct Node * child( Node u, char c, struct TAlphabet sw );
 struct Node * construct_sl_BbST_offline( struct Node * tree, INT n );
 struct Node * construct_sl_online( struct Node * tree, INT n );
 
-INT iterative_STfree( Node * tree, Node * current_node );
-list<Node*> iterative_DFS( Node * tree, Node * current_node );
+list<Node*> iterative_DFS( Node * tree );
 INT euler_tour( Node * tree, Node * current_node, struct ELR * ds );

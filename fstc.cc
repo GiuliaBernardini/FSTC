@@ -71,11 +71,10 @@ int main(int argc, char **argv)
 	/* Construct the suffix tree */
 	fprintf( stderr, "Constructing suffix tree of a sequence of length %ld\n", seq_len );
 
-	struct TAlphabet A;
 	Node * tree;	
-	tree = construct_suffix_tree_offline ( seq, A );
-	//tree = construct_suffix_tree_online ( seq, A );
-	iterative_STfree( tree, tree );
+	tree = construct_suffix_tree_offline ( seq );
+	//tree = construct_suffix_tree_online ( seq );
+	iterative_STfree( tree );
 		
 	if ( fclose ( in_fd ) )
 	{
@@ -86,8 +85,6 @@ int main(int argc, char **argv)
 
         fprintf( stderr, "Elapsed time for processing sequence: %lf secs\n", ( end - start ) );
 	free ( seq );
-	seq = NULL;
 	
-
 	return ( 0 );
 }
