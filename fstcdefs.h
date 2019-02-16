@@ -35,20 +35,20 @@ struct TAlphabet
 
 struct Node
 {
-  	Node		*parent;
-	map<char,Node*> *children;
+  	Node		* parent;
+	map<char,Node*> * children;
   	INT  		start;
   	INT 		depth;	
-	Node		*slink;
+	Node		* slink;
   	bool		visited;
 	INT 		label;
 };
 
 struct ELR
 {
- 	Node		**E;
- 	INT		*L;
- 	INT		*R;
+ 	Node		** E;
+ 	INT		*  L;
+ 	INT		*  R;
  	INT		size;
 };
 
