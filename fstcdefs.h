@@ -22,7 +22,9 @@
 #include <map>
 #include <stack>
 #include <list>
+#include "sparsepp/spp.h"
 using namespace std;
+using spp::sparse_hash_map;
 
 typedef long int INT;
 
@@ -35,13 +37,13 @@ struct TAlphabet
 
 struct Node
 {
-  	Node		* parent;
-	map<char,Node*> * children;
-  	INT  		start;
-  	INT 		depth;	
-	Node		* slink;
-  	bool		visited;
-	INT 		label;
+  	Node				* parent;
+	sparse_hash_map<char,Node*> 	* children;
+  	INT  				start;
+  	INT 				depth;	
+	Node				* slink;
+  	bool				visited;
+	INT 				label;
 };
 
 struct ELR

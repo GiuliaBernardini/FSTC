@@ -32,13 +32,15 @@
 #include <list>
 #include <vector>
 #include <sdsl/rmq_support.hpp>
-#include <divsufsort64.h>                                         
+#include <divsufsort64.h>   
+#include "sparsepp/spp.h"                                  
 
 #include "fstcdefs.h"
 #include "bbst.h"
 
 using namespace sdsl;
 using namespace std;
+using spp::sparse_hash_map;
 
 double gettime( void )
 {
@@ -74,7 +76,8 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	//struct Node * v = new struct Node();
-	v -> children = new map<char,Node*>;
+	//v -> children = new map<char,Node*>;
+	v -> children = new sparse_hash_map<char,Node*>;
 	v -> start = i; v -> depth = d;
 	if ( i + d == n )
 	{	
@@ -134,7 +137,7 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-	v -> children = new map<char,Node*>;
+	v -> children = new sparse_hash_map<char,Node*>;
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
@@ -153,7 +156,7 @@ struct Node * create_root( void )
 	v -> start = 0;
 	v -> depth = 0;
 	//v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	v -> children = new map<char,Node*>;
+	v -> children = new sparse_hash_map<char,Node*>;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
@@ -687,7 +690,7 @@ list<Node*> iterative_DFS( Node * current_node )
 				/*for(INT i = sw.sigma -1; i >= 0; i--)
 					if (current_node -> children[i] != NULL)	
 						S.push(current_node -> children[i]); */
-				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
+				for( auto it = current_node -> children -> begin(); it != current_node -> children -> end(); ++it)
 				{
 					S . push ( it -> second );
 		//			fprintf(stderr, "here I pushed node %ld\n", it -> second -> label);
@@ -702,8 +705,8 @@ list<Node*> iterative_DFS( Node * current_node )
 			current_node -> visited = false;	
 		}
 	}
-//	for(auto v: traversal)
-//		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
+	//for(auto v: traversal)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
 	return( traversal );
 }
 
@@ -729,7 +732,7 @@ INT euler_tour( Node * tree, Node * current_node, struct ELR * ds )
 			{
 				d++;
 				last_child.push(true);
-				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
+				for( auto it = current_node -> children -> begin(); it != current_node -> children -> end(); ++it)
 				{	
 					S . push ( it -> second );
 					last_child . push( false );
@@ -774,7 +777,7 @@ INT iterative_STfree( Node * current_node )
 						S.push(current_node -> children[i]);
 			*/
 			if( ! current_node -> children -> empty() )	
-				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)	
+				for( auto it = current_node -> children -> begin(); it != current_node -> children -> end(); ++it)	
 					S . push ( it -> second );
 		}
 		else
