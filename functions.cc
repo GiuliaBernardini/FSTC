@@ -70,7 +70,7 @@ INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 	else						return NULL;
 }*/
 
-struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
+struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq )
 {
 	INT i = u -> start;
 	Node * p = u -> parent;
@@ -87,8 +87,8 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	}
 	else				
 	{	
-		auto it = v -> children -> find(sw . mapping[seq[i+d]]);
-		if ( it == v -> children -> end())	v -> children -> emplace( sw . mapping[seq[i+d]] , u );
+		auto it = v -> children -> find(seq[i+d]);
+		if ( it == v -> children -> end())	v -> children -> emplace( seq[i+d] , u );
 		else 					it -> second = u;
 	}
 	u -> parent = v;
@@ -100,8 +100,8 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	}
 	else				
 	{	
-		auto it = p -> children -> find(sw . mapping[seq[i+p->depth]]);
-		if ( it == p -> children -> end())	p -> children -> emplace( sw . mapping[seq[i+p->depth]] , v );
+		auto it = p -> children -> find(seq[i+p->depth]);
+		if ( it == p -> children -> end())	p -> children -> emplace( seq[i+p->depth] , v );
 		else 					it -> second = v;
 	}	
 	v -> parent = p;
@@ -134,15 +134,15 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 }
 
 */
-struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
+struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> children = new sparse_hash_map<char,Node*>;
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
-	auto it = u -> children -> find(sw . mapping[seq[i+d]]);
-	if ( it == u -> children -> end())	u -> children -> emplace( sw . mapping[seq[i+d]] , v );
+	auto it = u -> children -> find(seq[i+d]);
+	if ( it == u -> children -> end())	u -> children -> emplace( seq[i+d] , v );
 	else 					it -> second = v;
 	v -> parent = u;
 	v -> label = label;
@@ -155,7 +155,6 @@ struct Node * create_root( void )
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	//v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
 	v -> children = new sparse_hash_map<char,Node*>;
 	v -> parent = NULL;
 	v -> visited = false;
@@ -167,6 +166,8 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq )
 	INT n = strlen ( ( char * ) seq );
 
 	/* Construct the alphabet map */
+/*
+
 	struct TAlphabet sw;
 	unordered_map<unsigned char, INT> u;
 	INT value = 1;
@@ -190,6 +191,7 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq )
 	for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
 	fprintf( stderr, "\n");
 	sw . sigma = sw . sigma + 1;	//increase by one for $
+*/
 
         /* Compute the suffix array */
 	INT * SA;
@@ -243,7 +245,7 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq )
 	Node * ancestor;
 	Node * rightmost_child;
 	INT label = n+1;
-	last_leaf = create_leaf( root, SA[0], 0, n, SA[0], seq, sw );
+	last_leaf = create_leaf( root, SA[0], 0, n, SA[0], seq );
 	for(INT i = 1; i < n; i++)
 	{
 		rightmost_child = last_leaf;
@@ -257,17 +259,17 @@ struct Node * construct_suffix_tree_offline ( unsigned char * seq )
 		
 		if( ancestor -> depth == LCP[i] )
 		{	
-			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq, sw );
+			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq);
 //			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", ancestor -> label, (int)ancestor -> children -> size());
 			
 		}
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq, sw );			
+			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq);			
 			label++;
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
-			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq, sw );	
+			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq );	
 //			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", new_node -> label, (int)new_node -> children -> size());
 		}
 	}
@@ -292,7 +294,7 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq )
 	INT n = strlen ( ( char * ) seq );
 
 	/* Construct the alphabet map */
-	struct TAlphabet sw;
+/*	struct TAlphabet sw;
 	unordered_map<unsigned char, INT> u;
 	INT value = 1;
 	for ( INT i = 0; i < n; i++ )	if ( u[seq[i]] == 0 )	u[seq[i]] = value++;
@@ -315,7 +317,7 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq )
 	for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
 	fprintf( stderr, "\n");
 	sw . sigma = sw . sigma + 1;	//increase by one for $
-
+*/
         /* Compute the suffix array */
 	INT * SA;
 	INT * LCP;
@@ -368,7 +370,7 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq )
 	Node * ancestor;
 	Node * rightmost_child;
 	INT label = n+1;
-	last_leaf = create_leaf( root, SA[0], 0, n, SA[0], seq, sw );
+	last_leaf = create_leaf( root, SA[0], 0, n, SA[0], seq);
 	for(INT i = 1; i < n; i++)
 	{
 		rightmost_child = last_leaf;
@@ -382,17 +384,17 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq )
 		
 		if( ancestor -> depth == LCP[i] )
 		{	
-			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq, sw );
+			last_leaf = create_leaf( ancestor, SA[i], LCP[i], n, SA[i], seq );
 //			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", ancestor -> label, (int)ancestor -> children -> size());
 			
 		}
 		else
 		{
-			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq, sw );			
+			Node * new_node = create_node( rightmost_child, LCP[i], n, label, seq );			
 			label++;
 			rightmost_child -> parent = new_node;
 			rightmost_child -> start = SA[i-1];
-			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq, sw );	
+			last_leaf = create_leaf( new_node, SA[i], LCP[i], n, SA[i], seq);	
 //			fprintf(stderr, "Constructing ST: node %ld has %d children by now\n", new_node -> label, (int)new_node -> children -> size());
 		}
 	}
