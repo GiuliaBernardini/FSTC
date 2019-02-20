@@ -76,34 +76,29 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	//struct Node * v = new struct Node();
-	//v -> children = new map<char,Node*>;
 	v -> children = new sparse_hash_map<char,Node*>;
 	v -> start = i; v -> depth = d;
+	
 	if ( i + d == n )
-	{	
-		auto it = v -> children -> find('$');
-		if ( it == v -> children -> end())	v -> children -> emplace( '$' , u );
-		else 					it -> second = u;
-	}
+		v -> children -> emplace( '$' , u ); 
 	else				
-	{	
-		auto it = v -> children -> find(seq[i+d]);
-		if ( it == v -> children -> end())	v -> children -> emplace( seq[i+d] , u );
-		else 					it -> second = u;
-	}
+		v -> children -> emplace( seq[i+d] , u );
+		
 	u -> parent = v;
-	if ( i + p -> depth == n )	
+	
+/*	if ( i + p -> depth == n )	
 	{	
 		auto it = p -> children -> find('$');
 		if ( it == p -> children -> end())	p -> children -> emplace( '$' , v );
 		else 					it -> second = v;
 	}
 	else				
-	{	
-		auto it = p -> children -> find(seq[i+p->depth]);
-		if ( it == p -> children -> end())	p -> children -> emplace( seq[i+p->depth] , v );
-		else 					it -> second = v;
-	}	
+	{
+*/	
+	auto it = p -> children -> find(seq[i+p->depth]);
+	if ( it == p -> children -> end())	p -> children -> emplace( seq[i+p->depth] , v );
+	else 					it -> second = v;
+//	}	
 	v -> parent = p;
 	v -> visited = false;
 	v -> label = label;
@@ -707,8 +702,8 @@ list<Node*> iterative_DFS( Node * current_node )
 			current_node -> visited = false;	
 		}
 	}
-	//for(auto v: traversal)
-	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
+	for(auto v: traversal)
+		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
 	return( traversal );
 }
 
