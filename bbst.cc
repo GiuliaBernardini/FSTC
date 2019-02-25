@@ -145,7 +145,7 @@ t_array_size BbST::rmq(const t_array_size &begIdx, const t_array_size &endIdx) {
 #endif
     const t_array_size kBlockCount = endCompIdx - begCompIdx; // actual kBlock count is +1
     const t_array_size e = kBlockCount?(31 - __builtin_clz(kBlockCount)):0;
-    fprintf( stderr, "%ld\n", kBlockCount );
+ //   fprintf( stderr, "%ld\n", kBlockCount );
     const t_array_size step = 1 << e;
     const t_array_size endShiftCompIdx = endCompIdx - step + 1;
     t_value leftMin = blocksVal2D[begCompIdx + e * blocksCount];

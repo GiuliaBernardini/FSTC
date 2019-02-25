@@ -486,9 +486,18 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, INT n )
     	{
        		if(Q_lca[i] . L >= 0)
 		{
-       			 Q[2*idx] = ds.R[Q_lca[i] . L];
- 			 Q[2*idx + 1] = ds.R[Q_lca[i] . R];
-			 idx++;
+			if(ds.R[Q_lca[i] . L] <= ds.R[Q_lca[i] . R])
+			{
+       			 	Q[2*idx] = ds.R[Q_lca[i] . L];
+ 			 	Q[2*idx + 1] = ds.R[Q_lca[i] . R];
+			 	idx++;
+			 }
+			 else
+			 {
+			 	Q[2*idx] = ds.R[Q_lca[i] . R];
+ 			 	Q[2*idx + 1] = ds.R[Q_lca[i] . L];
+			 	idx++;
+			 }
 		}
    	 }
 
@@ -526,8 +535,8 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, INT n )
 		}
 	}		
 
-	//for ( INT i = n+1; i < ds . size; i++ )	
-      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+	for ( INT i = n+1; i < ds . size; i++ )	
+      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
 
 	free ( Q_lca );
 	free ( ds . E );
@@ -613,9 +622,18 @@ struct Node * construct_sl_online( struct Node * tree, INT n )
     	{
        		if(Q_lca[i] . L >= 0)
 		{
-       			 Q[2*idx] = ds.R[Q_lca[i] . L];
- 			 Q[2*idx + 1] = ds.R[Q_lca[i] . R];
-			 idx++;
+			if(ds.R[Q_lca[i] . L] <= ds.R[Q_lca[i] . R])
+			{
+       			 	Q[2*idx] = ds.R[Q_lca[i] . L];
+ 			 	Q[2*idx + 1] = ds.R[Q_lca[i] . R];
+			 	idx++;
+			 }
+			 else
+			 {
+			 	Q[2*idx] = ds.R[Q_lca[i] . R];
+ 			 	Q[2*idx + 1] = ds.R[Q_lca[i] . L];
+			 	idx++;
+			 }
 		}
    	 }
 
@@ -656,8 +674,8 @@ struct Node * construct_sl_online( struct Node * tree, INT n )
 		}
 	}		
 
-	//for ( INT i = n+1; i < ds . size; i++ )	
-     	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+	for ( INT i = n+1; i < ds . size; i++ )	
+     		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
 
 	free ( Q_lca );
 	free ( ds . E );
@@ -702,8 +720,8 @@ list<Node*> iterative_DFS( Node * current_node )
 			current_node -> visited = false;	
 		}
 	}
-	for(auto v: traversal)
-		fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
+	//for(auto v: traversal)
+	//	fprintf ( stderr, "(START:%ld,DEPTH:%ld), label: %ld\n", v -> start, v -> depth, v -> label );
 	return( traversal );
 }
 
