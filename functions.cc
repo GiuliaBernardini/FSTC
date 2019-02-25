@@ -535,8 +535,8 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, INT n )
 		}
 	}		
 
-	for ( INT i = n+1; i < ds . size; i++ )	
-      		fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
+	//for ( INT i = n+1; i < ds . size; i++ )	
+      	//	fprintf( stderr, "slink of node with label %ld: %ld\n", i, ds.E[ds . R[i]]->slink->label);
 
 	free ( Q_lca );
 	free ( ds . E );
