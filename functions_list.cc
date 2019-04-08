@@ -28,6 +28,7 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <utility>
 #include <algorithm>
 #include <list>
 #include <vector>
@@ -35,12 +36,12 @@
 #include <divsufsort64.h>   
 #include "sparsepp/spp.h"                                  
 
-#include "fstcdefs.h"
+#include "fstcdefs_list.h"
 #include "bbst.h"
 
 using namespace sdsl;
 using namespace std;
-using spp::sparse_hash_map;
+//using spp::sparse_hash_map;
 
 double gettime( void )
 {
@@ -64,40 +65,29 @@ INT LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP )
 	return ( 1 );
 }
 
-/*struct Node* child(Node *u, unsigned char c, struct TAlphabet sw)
-{
-	if(u -> children[sw . mapping[c]] != NULL)	return u -> children[sw . mapping[c]];
-	else						return NULL;
-}*/
-
 struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq )
 {
 	INT i = u -> start;
 	Node * p = u -> parent;
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	//struct Node * v = new struct Node();
-	v -> children = new sparse_hash_map<char,Node*>;
+	v -> children = new list< pair<unsigned char,Node*> >;
 	v -> start = i; v -> depth = d;
 	// when a ghost terminal character is added to every sequence, there are no terminal nodes unless it is n-1 here
 	if ( i + d == n )
-		v -> children -> emplace( '$' , u ); 
+		v -> children -> emplace_back( '$' , u ); 
 	else				
-		v -> children -> emplace( seq[i+d] , u );
+		v -> children -> emplace_back( seq[i+d] , u );
 		
 	u -> parent = v;
-/*	
-	if ( i + p -> depth == n )	
-	{	
-		auto it = p -> children -> find('$');
-		if ( it == p -> children -> end())	p -> children -> emplace( '$' , v );
-		else 					it -> second = v;
+
+	if ( p -> children -> back() . first != seq[i+p->depth] ){	
+		p -> children -> emplace_back( seq[i+p->depth] , v );
 	}
-	else				
-	{*/
-	auto it = p -> children -> find(seq[i+p->depth]);
-	if ( it == p -> children -> end())	{p -> children -> emplace( seq[i+p->depth] , v );}
-	else 					{it -> second = v;}
-//	}	
+	else {					
+		p -> children -> back() . second = v;
+	}
+	
 	v -> parent = p;
 	v -> visited = false;
 	v -> label = label;
@@ -106,36 +96,15 @@ struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * se
 	return v;
 }
 
-/*
-struct Node * create_node( Node * u, INT d, INT n, INT label, unsigned char * seq, struct TAlphabet sw )
-{
-	INT i = u -> start;
-	Node * p = u -> parent;
-	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-//TODO: instead of sigma space per Node, use hashmaps
-	v -> children = ( struct Node ** ) calloc (sw . sigma, sizeof(struct Node *));
-	v -> start = i; v -> depth = d;
-	if ( i + d == n )		v -> children[0] = u;
-	else				v -> children[sw . mapping[seq[i+d]]] = u;
-	u -> parent = v;
-	if ( i + p -> depth == n )	p -> children[0] = v;
-	else				p -> children[sw . mapping[seq[i+p->depth]]] = v;
-	v -> parent = p;
-	v -> visited = false;
-	v -> label = label;
-	v -> slink = NULL;
-	return v;
-}
 
-*/
 struct Node * create_leaf( Node * u, INT i, INT d, INT n, INT label, unsigned char * seq )
 {
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
-	v -> children = new sparse_hash_map<char,Node*>;
+	v -> children = new list< pair<unsigned char,Node*> >;
 	v -> start = i;
 	v -> depth = n - i + 1;
 	v -> visited = false;
-	u -> children -> emplace( seq[i+d] , v );
+	u -> children -> emplace_back( seq[i+d] , v );
 	v -> parent = u;
 	v -> label = label;
 //	fprintf(stderr, "I added leaf %ld to node %ld, which now has %d children\n", v -> label, u -> label, (int)u -> children -> size());
@@ -147,11 +116,10 @@ struct Node * create_root( void )
 	struct Node * v = ( struct Node * ) malloc (sizeof(struct Node)); 
 	v -> start = 0;
 	v -> depth = 0;
-	v -> children = new sparse_hash_map<char,Node*>;
+	v -> children = new list< pair<unsigned char,Node*> >;
 	v -> parent = NULL;
 	v -> visited = false;
 	return v;
-
 }
 
 struct Node * construct_suffix_tree_offline ( unsigned char * seq )
@@ -258,31 +226,6 @@ struct Node * construct_suffix_tree_online ( unsigned char * seq )
 {
 	INT n = strlen ( ( char * ) seq );
 
-	/* Construct the alphabet map */
-/*	struct TAlphabet sw;
-	unordered_map<unsigned char, INT> u;
-	INT value = 1;
-	for ( INT i = 0; i < n; i++ )	if ( u[seq[i]] == 0 )	u[seq[i]] = value++;
-    
-	sw . sigma = 0;
-	for( const auto& a : u )	sw . sigma++;
-	
-	unsigned char * alphabet_string = ( unsigned char * ) calloc ( sw . sigma + 1, sizeof(unsigned char));
-	
-	INT i = 0;
-	for( const auto& a : u )	alphabet_string[i++]=a.first;
-	alphabet_string[sw.sigma]=0;
-	sort(&alphabet_string[0], &alphabet_string[sw.sigma]);
-	
-	for ( INT i = 0; i < sw . sigma; i++ )	sw . mapping[alphabet_string[i]] = i+1;
-	free ( alphabet_string );
-	
-	fprintf( stderr, " Alphabet size: %ld\n", sw . sigma);
-	fprintf( stderr, " (Letter, Rank): ");
-	for( const auto& a : sw . mapping )	fprintf( stderr, "(%c,%ld) ", a.first, a.second);
-	fprintf( stderr, "\n");
-	sw . sigma = sw . sigma + 1;	//increase by one for $
-*/
         /* Compute the suffix array */
 	INT * SA;
 	INT * LCP;
@@ -391,7 +334,7 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, INT n )
 	ds . R = ( INT * ) calloc (ds . size, sizeof(INT));
 	euler_tour( tree, tree, &ds );
 //	for(int i=0; i<2*ds.size -1; i++)
-//		fprintf ( stderr, "(START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
+//		fprintf ( stderr, "Euler: (START:%ld,DEPTH:%ld), level: %ld, label: %ld\n", ds . E[i] -> start, ds . E[i] -> depth, ds . L[i], ds . E[i] -> label );
 
 	/* Create the LCA queries */
 	Query * Q_lca = ( Query * ) calloc ( ds . size - n - 1 , sizeof( Query ) );
@@ -402,11 +345,10 @@ struct Node * construct_sl_BbST_offline( struct Node * tree, INT n )
 		Q_lca[i] . R = -1;
 		/* Add the suffix links for terminal internal nodes */
 		node_id = ds.R[i+n+1];
-		if( ds.E[node_id] -> children -> count ('$') != 0 )
+		if( ds.E[node_id] -> children -> front() . first == '$' )
 		{ 	
-			INT dollar_leaf_label = ds . E[node_id] -> children -> find('$') -> second -> label;
+			INT dollar_leaf_label = ds.E[node_id] -> children -> front() . second -> label;
 			INT following_leaf = ds . R[dollar_leaf_label + 1];
-			//should it be n-1 also here?				
 			if( dollar_leaf_label + 1 < n )	ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
 			else				ds.E[node_id] -> slink = ds.E[following_leaf];
 		}
@@ -529,11 +471,10 @@ struct Node * construct_sl_online( struct Node * tree, INT n )
 		Q_lca[i] . R = -1;
 		/* Add the suffix links for terminal internal nodes */
 		node_id = ds.R[i+n+1];
-		if( ds.E[node_id] -> children -> count ('$') != 0 )
+		if( ds.E[node_id] -> children -> front() . first == '$' )
 		{ 	
-			INT dollar_leaf_label = ds . E[node_id] -> children -> find('$') -> second -> label;
+			INT dollar_leaf_label = ds . E[node_id] -> children -> front() . second -> label;
 			INT following_leaf = ds . R[dollar_leaf_label + 1];
-		//should it be n-1 also here?
 			if( dollar_leaf_label + 1 < n )	ds.E[node_id] -> slink = ds.E[following_leaf] -> parent;
 			else				ds.E[node_id] -> slink = ds.E[following_leaf];
 		}
@@ -649,14 +590,10 @@ list<Node*> iterative_DFS( Node * current_node )
 		if(!current_node -> visited)
 		{
 			current_node -> visited = true;
-//			if( current_node -> children != NULL )
 			if( ! current_node -> children -> empty() )
 			{
 //				fprintf(stderr, "node %ld has %d children\n", current_node -> label, (int)current_node -> children -> size());
-				/*for(INT i = sw.sigma -1; i >= 0; i--)
-					if (current_node -> children[i] != NULL)	
-						S.push(current_node -> children[i]); */
-				for( auto it = current_node -> children -> begin(); it != current_node -> children -> end(); ++it)
+				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
 				{
 					S . push ( it -> second );
 		//			fprintf(stderr, "here I pushed node %ld\n", it -> second -> label);
@@ -698,7 +635,7 @@ INT euler_tour( Node * tree, Node * current_node, struct ELR * ds )
 			{
 				d++;
 				last_child.push(true);
-				for( auto it = current_node -> children -> begin(); it != current_node -> children -> end(); ++it)
+				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)
 				{	
 					S . push ( it -> second );
 					last_child . push( false );
@@ -743,7 +680,7 @@ INT iterative_STfree( Node * current_node )
 						S.push(current_node -> children[i]);
 			*/
 			if( ! current_node -> children -> empty() )	
-				for( auto it = current_node -> children -> begin(); it != current_node -> children -> end(); ++it)	
+				for( auto it = current_node -> children -> rbegin(); it != current_node -> children -> rend(); ++it)	
 					S . push ( it -> second );
 		}
 		else
@@ -760,38 +697,4 @@ INT iterative_STfree( Node * current_node )
 
 /* Test functions */
 
-/*
-INT DFS( Node * tree, Node * current_node, struct TAlphabet sw )
-{
-	current_node -> visited = true;
-	if( current_node -> children != NULL )
-		for(INT i = 0; i < sw . sigma; i++)
-			if (current_node -> children[i] != NULL)
-				if (current_node -> children[i] -> visited != true)
-					DFS(tree, current_node -> children[i], sw);		
-	fprintf ( stderr, "(START:%ld,DEPTH:%ld)\n", current_node -> start, current_node -> depth );
-	current_node -> visited = false;
-	return( 1 );
-}
 
-INT STfree( Node * tree, Node * current_node, struct TAlphabet sw )
-{
-	current_node -> visited = true;
-	if( current_node -> children != NULL )
-		for(INT i = 0; i < sw . sigma; i++)
-			if (current_node -> children[i] != NULL)
-				if (current_node -> children[i] -> visited != true)
-					STfree(tree, current_node -> children[i], sw);		
-	if ( current_node -> children != NULL )
-	{
-		free ( current_node -> children );
-		current_node -> children = NULL;
-	}
-	if ( current_node )
-	{
-		free ( current_node );
-		current_node = NULL;
-	}
-	return( 1 );
-}
-*/

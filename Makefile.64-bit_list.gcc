@@ -1,0 +1,40 @@
+MF=     Makefile.64-bit_list.gcc
+ 
+CC=     g++
+ 
+CFLAGS= -g -msse3 -O3 -fomit-frame-pointer -funroll-loops -fopenmp 
+ 
+LFLAGS= -std=c++11 -O3 -DNDEBUG -I ./libsdsl/include/ -L ./libsdsl/lib/ -lsdsl -ldivsufsort -ldivsufsort64 -Wl,-rpath=$(PWD)/libsdsl/lib 
+ 
+EXE=    fstc_list
+ 
+SRC=    fstc_list.cc functions_list.cc bbst.cc
+ 
+HD=     fstcdefs_list.h Makefile.64-bit_list.gcc bbst.h
+ 
+# 
+# No need to edit below this line 
+# 
+ 
+.SUFFIXES: 
+.SUFFIXES: .cc .o 
+ 
+OBJ=    $(SRC:.cc=.o) 
+ 
+.cc.o: 
+	$(CC) $(CFLAGS)-c $(LFLAGS) $< 
+ 
+all:    $(EXE) 
+ 
+$(EXE): $(OBJ) 
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LFLAGS) 
+ 
+$(OBJ): $(MF) $(HD) 
+ 
+clean: 
+	rm -f $(OBJ) $(EXE) *~
+
+clean-all: 
+	rm -f $(OBJ) $(EXE) *~
+	rm -r libsdsl
+	rm -r sdsl-lite
